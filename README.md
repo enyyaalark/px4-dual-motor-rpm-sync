@@ -50,13 +50,13 @@ A3144E -> 4.7kΩ 上拉至 3.3V -> 1kΩ 串联 -> 1nF 起始滤波
 ## 软件组成
 
 ```text
-firmware/stm32/App/   STM32 HAL/C 模块接口骨架（无猜测引脚、无 .ioc）
+firmware/stm32/App/   STM32 HAL/C++17 模块接口骨架（无猜测引脚、无 .ioc）
 tools/                CSV 校验和绘图工具
 tests/                主机侧基础测试
 docs/                 架构、接线、算法、安全、校准、计划与风险文档
 ```
 
-STM32 状态机至少包括 `INIT`、`MONITOR_ONLY`、`SYNC_CONTROL`、`BYPASS`、`FAULT`。参数集中在 `app_config.h`，最终定时器和 GPIO 保持 `TBD`。
+STM32 应用层使用 C++17，状态机至少包括 `INIT`、`MONITOR_ONLY`、`SYNC_CONTROL`、`BYPASS`、`FAULT`。参数集中在 `app_config.hpp`，最终定时器和 GPIO 保持 `TBD`。CubeMX 生成的 HAL C 代码通过薄的 C++ 适配层接入；HAL 回调需要时使用 `extern "C"` 保持 ABI 兼容。
 
 ## 快速开始
 
@@ -68,6 +68,7 @@ source .venv/bin/activate
 python3 -m pip install -r tools/requirements.txt
 python3 tools/plot_rpm_log.py data/demo/synthetic_rpm_log.csv --output data/processed/demo_plot.png
 python3 -m unittest discover -s tests -v
+c++ -std=c++17 -Wall -Wextra -Werror -fsyntax-only firmware/stm32/App/*.cpp
 ```
 
 示例 CSV 是明确标记的 `synthetic/demo` 数据，不能作为硬件性能证据。
@@ -115,7 +116,7 @@ UART 第一阶段发送到电脑；PX4 不会自动理解这些数据。若未�
 ## 当前完成状态
 
 - [x] 项目范围、安全边界、架构和三周计划
-- [x] 文档、Issue/PR 模板和 STM32 模块骨架
+- [x] 文档、Issue/PR 模板和 STM32 C++17 模块骨架
 - [x] synthetic/demo CSV 绘图工具与主机侧基础测试
 - [ ] 硬件型号、电压、协议和引脚确认
 - [ ] 霍尔、PWM、旁路及 UART 实机验证

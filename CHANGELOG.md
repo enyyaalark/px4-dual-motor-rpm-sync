@@ -11,6 +11,11 @@
 - synthetic/demo CSV、RPM 日志校验/绘图工具和基础测试。
 - GitHub Issue/PR 模板、标签、里程碑与三周任务规划。
 
+### Changed
+
+- STM32 应用层技术栈确定为 C++17，模块扩展名改为 `.cpp/.hpp`。
+- 增加 C++17 主机语法检查，并明确 CubeMX HAL C 与应用层的 ABI 适配边界。
+
 ### Not verified
 
 - 所有硬件、电气、PWM、RPM、旁路和闭环控制行为均尚未实机验证。
