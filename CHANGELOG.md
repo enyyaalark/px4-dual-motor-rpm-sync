@@ -10,6 +10,7 @@
 - STM32G431 模块接口骨架与集中配置模板。
 - synthetic/demo CSV、RPM 日志校验/绘图工具和基础测试。
 - GitHub Issue/PR 模板、标签、里程碑与三周任务规划。
+- AI 项目上下文、任务防重复规则和 Issue/Project 进度交接规范。
 
 ### Changed
 

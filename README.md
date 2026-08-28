@@ -140,4 +140,4 @@ UART 第一阶段发送到电脑；PX4 不会自动理解这些数据。若未�
 
 ## 协作
 
-使用 `main` 作为唯一长期分支；每项任务使用短功能分支和 Pull Request。暂不添加许可证。贡献要求见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+使用 `main` 作为唯一长期分支；每项任务使用短功能分支和 Pull Request。暂不添加许可证。贡献要求见 [CONTRIBUTING.md](CONTRIBUTING.md)。AI 助手开始工作前应读取 [AGENTS.md](AGENTS.md)，任务状态和交接方式见[进度记录规范](docs/progress-tracking.md)。
