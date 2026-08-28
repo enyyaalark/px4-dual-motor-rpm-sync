@@ -1,0 +1,41 @@
+# STM32CubeIDE / STM32CubeMX
+.metadata/
+.settings/
+Debug/
+Release/
+*.launch
+*.ioc.bak
+
+# Build products
+build/
+*.elf
+*.hex
+*.bin
+*.map
+*.o
+*.d
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Generated plots and local logs
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials*
+secrets*

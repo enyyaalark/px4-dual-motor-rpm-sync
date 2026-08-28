@@ -1,0 +1,36 @@
+name: 缺陷报告
+description: 报告可重复的软件、硬件或测试问题
+title: "[BUG] "
+labels: []
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 问题描述
+    validations:
+      required: true
+  - type: textarea
+    id: setup
+    attributes:
+      label: 硬件、固件与测试条件
+      description: 不填写账号、密钥、机器路径或串口设备名
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期与实际结果
+    validations:
+      required: true
+  - type: textarea
+    id: safety
+    attributes:
+      label: 安全影响与临时措施
+    validations:
+      required: true

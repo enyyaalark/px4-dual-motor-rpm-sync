@@ -1,0 +1,59 @@
+name: 工程任务
+description: 创建可验收的硬件、固件、控制、测试或文档任务
+title: "[TASK] "
+labels: []
+body:
+  - type: textarea
+    id: objective
+    attributes:
+      label: 任务目标
+    validations:
+      required: true
+  - type: textarea
+    id: inputs
+    attributes:
+      label: 所需输入
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 操作步骤
+      value: "1. \n2. \n3. "
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 验收标准
+    validations:
+      required: true
+  - type: textarea
+    id: safety
+    attributes:
+      label: 安全注意事项
+    validations:
+      required: true
+  - type: textarea
+    id: prerequisites
+    attributes:
+      label: 前置任务
+      description: 没有则填写“无”
+    validations:
+      required: true
+  - type: textarea
+    id: outputs
+    attributes:
+      label: 产出文件或数据
+    validations:
+      required: true
+  - type: dropdown
+    id: owner_role
+    attributes:
+      label: 建议负责人
+      options:
+        - role:hardware
+        - role:firmware
+        - 两人共同
+    validations:
+      required: true
