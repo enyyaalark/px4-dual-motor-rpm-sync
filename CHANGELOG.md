@@ -12,6 +12,7 @@
 - GitHub Issue/PR 模板、标签、里程碑与三周任务规划。
 - AI 项目上下文、任务防重复规则和 Issue/Project 进度交接规范。
 - 面向两名成员的角色分工、逐日协作、交接依赖和共同复核安排。
+- 新增固件负责人待做清单，分开记录已完成、等待 PR 合并、可独立推进和硬件阻塞项。
 - STM32Cube 工具链发现脚本、主机测试和点灯/UART 启动前检查说明。
 - 基于 WeAct Studio QFN48 V1.0 官方原理图的 Issue #3 最小 CubeMX 点灯/UART 配置。
 - 可交叉编译的 STM32CubeIDE 最小工程、PC6 点灯节拍和 PA9 单向 UART 版本心跳；固件基于 STM32CubeG4 v1.6.3 的必要 HAL/CMSIS 子集。
