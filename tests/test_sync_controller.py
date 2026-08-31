@@ -44,6 +44,18 @@ int main() {
     if (!near(controller.integral, 0.0F)) return 10;
     if (!near(step(controller, config, 200.0F, 100.0F, 0.0F, true), 0.0F)) return 11;
     if (!near(controller.integral, 0.0F)) return 12;
+    controller.integral = 2.0F;
+    if (!near(step(controller, config, 200.0F, 100.0F, 1.0F, false), 0.0F)) return 13;
+    if (!near(controller.integral, 0.0F)) return 14;
+    controller.integral = 2.0F;
+    if (!near(step(controller, config, NAN, 100.0F, 1.0F, true), 0.0F)) return 15;
+    if (!near(controller.integral, 0.0F)) return 16;
+    const SyncControllerConfig negative_limits{1.0F, 1.0F, 0.0F, 100.0F, -10.0F, -3.0F};
+    if (!near(step(controller, negative_limits, 101.0F, 100.0F, 1.0F, true), 2.0F)) return 17;
+    if (!near(controller.integral, 1.0F)) return 18;
+    const float unwind = step(controller, config, 199.0F, 200.0F, 1.0F, true);
+    if (!near(unwind, -1.0F)) return 19;
+    if (!near(controller.integral, 0.0F)) return 20;
     return 0;
 }
 '''
