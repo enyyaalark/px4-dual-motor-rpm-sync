@@ -18,7 +18,7 @@
 - Issue #3 配置回归测试，锁定板型、LED/SWD/UART 映射、MONITOR_ONLY 范围及工程元数据可移植性。
 - Issue #3 Ubuntu 端 UART 心跳验收工具，支持有界读取、严格版本/板型/模式校验和不可覆盖的原始记录。
 - `Debug`/`Release` 两个 configuration 的 `.bin` 产出（USB DFU 下载所需）及对应回归测试。
-- Q12 焊台可用性阻塞项，记录排针未焊接时被阻塞的引脚与任务范围。
+- Q12 排针可用性阻塞项，区分已组装的两侧 I/O 排针与仍未焊接的中央 SWD 孔位。
 
 ### Changed
 
@@ -29,7 +29,9 @@
 - 实板确认核心板 USB-C 的 STM32 ROM DFU 下载路径可用；Issue #3 固件写入校验、PC6 LED 复位启动和断电冷启动观察通过，ST-LINK 改为调试/回退路径。
 - 记录 Linux 下 `0483:df11` 需要 udev 规则，以及 `-g` 跳转启动因 bootloader 残留 HSI48/PLL 可能停在 `Error_Handler()`，点灯判定必须冷启动或按 `RESET`。
 - 标注 SWD 三线位于 100mil 排针孔位，需先焊接排针，并说明无焊台时改用 USB DFU。
+- 记录 Ubuntu `brltty-udev` 抢占 CH340、导致 `ttyUSB0` 立即消失的诊断特征及仅本次启动生效的恢复步骤。
+- 实板确认 `PA9/USART1_TX -> CH340 RXD` 的 115200 8N1 单向心跳；首次采集获得 3 条完整心跳，USB-C 断电约 5 秒后再采集仍获得 3/3 条有效心跳。
 
 ### Not verified
 
-- PA9 UART、SWD 调试、电气接口、PWM、RPM、旁路和闭环控制行为尚未实机验证。
+- SWD 调试、其他电气接口、PWM、RPM、旁路和闭环控制行为尚未实机验证。

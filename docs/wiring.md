@@ -46,7 +46,7 @@ STM32 GND --- USB-TTL GND
 
 2026-09-01 已在本项目使用的 WeAct QFN48 V1.0 实板确认：核心板 USB-C 数据口可进入 STM32 ROM DFU（USB VID:PID `0483:df11`）。在断开电机、电调、电池、CH340 和 ST-LINK 后，按住 `BOOT`、短按并松开 `RESET`、等待约 1 秒再松开 `BOOT`，可由 STM32CubeProgrammer 通过 USB 下载。下载必须启用写后校验；正常启动或冷启动时不得按住 `BOOT`。
 
-该验证仅证明此实板的 USB DFU 下载路径可用，不代表应用固件实现了 USB CDC，也不替代后续 SWD 调试能力。Issue #3 固件经 USB DFU 写入校验后，PC6 LED 的 500 ms 翻转在复位启动和 USB-C 断电重启后均已观察通过；PA9 UART 仍需单独验证。
+该验证仅证明此实板的 USB DFU 下载路径可用，不代表应用固件实现了 USB CDC，也不替代后续 SWD 调试能力。Issue #3 固件经 USB DFU 写入校验后，PC6 LED 的 500 ms 翻转在复位启动和 USB-C 断电重启后均已观察通过。`PA9/USART1_TX -> CH340 RXD` 在 115200 8N1 下首次与 USB-C 断电约 5 秒后再次采集均得到至少 3 条完整、格式匹配的 `MONITOR_ONLY` 心跳。
 
 Linux 主机需要为 `0483:df11` 安装 udev 规则后才能下载。默认该设备属于 `root:root`，普通用户只有读权限，此时 `lsusb` 能看到设备，但 STM32CubeProgrammer 报 `No STM32 device in DFU mode connected`。规则文件只新增 `0483:df11`，不修改 ST-LINK 现有规则；规则生效后必须重新插拔并重新执行按键顺序，因为 udev 不对已连接设备追溯。
 

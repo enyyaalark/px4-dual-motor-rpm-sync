@@ -41,3 +41,24 @@ python3 tools/check_bringup_uart.py \
 
 工具固定按 115200 8N1 接收，并只接受
 `rpm_sync_bringup,v1,board=weact_g431_qfn48,mode=MONITOR_ONLY`。读取有总时限，原始记录使用独占创建模式，已有文件不会被覆盖。串口设备名只在本地命令行传入，不写进仓库记录。
+
+### Ubuntu 上 CH340 被 brltty 抢占
+
+若 `lsusb` 能看到 `1a86:7523`，但 `/dev/ttyUSB*` 设备节点出现后立即消失，并且内核日志包含 `interface 0 claimed by ch341 while 'brltty' sets config #1`，说明盲文终端服务错误抢占了 CH340，而不是 UART 接线或固件已经验证失败。
+
+本次启动可临时执行：
+
+```bash
+sudo systemctl mask --runtime brltty-udev.service
+sudo systemctl stop brltty-udev.service
+```
+
+随后必须拔下并重新插入 CH340，再确认：
+
+```bash
+systemctl is-enabled brltty-udev.service  # 预期 masked-runtime
+systemctl is-active brltty-udev.service   # 预期 inactive
+ls -l /dev/ttyUSB*
+```
+
+`--runtime` 只在本次开机期间有效，重启后恢复。是否永久禁用或卸载 `brltty` 取决于主机是否需要盲文设备支持，不作为项目脚本自动执行。

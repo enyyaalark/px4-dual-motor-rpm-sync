@@ -29,7 +29,7 @@
 | STM32 -> HCT157 | 3.3V PWM | HCT157 输入高阈值 | 待数据手册/实测 |
 | HCT157 -> ESC | `TBD` | ESC 控制高阈值 | 待实测 |
 | A3144E -> HC14 | 开集电极 + 3.3V 上拉 | HC14 施密特输入 | 待台架波形 |
-| STM32 -> CH340 USB-TTL | 3.3V UART TX，波特率 `TBD` | CH340 RXD；3.3V 高电平识别能力待单向实测 | 允许仅连接 TXD->RXD 与共地进行 L1 验证 |
+| STM32 -> CH340 USB-TTL | 3.3V UART TX，115200 8N1（Issue #3 bring-up） | CH340 RXD | L1 单向心跳与断电重启后采集已实测通过 |
 | CH340 USB-TTL -> STM32 | TXD 空闲高电平实测 5V | 仅在增加合规电平转换后连接 | 阻塞；第一阶段保持断开 |
 | STM32 -> PX4 | 3.3V UART，波特率 `TBD` | PX4 RX 电平/协议 | 后续阶段待确认 |
 
