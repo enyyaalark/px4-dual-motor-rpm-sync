@@ -19,3 +19,46 @@ python3 tools/plot_rpm_log.py data/demo/synthetic_rpm_log.csv --output data/proc
 `data/demo/synthetic_rpm_log.csv` 是人工构造的格式演示数据，不代表真实硬件、控制效果或验收结果。
 
 真实实验日志应写入 `data/raw/`，并在同名记录中注明硬件、固件提交、条件和结论。仓库默认忽略这些本地原始数据，避免误提交设备信息或大文件。
+
+STM32 点灯/UART 任务开始前可检查本机工具链：
+
+```bash
+python3 tools/check_stm32_toolchain.py
+```
+
+默认输出只包含 `FOUND`/`MISSING`，避免把个人机器绝对路径写入项目记录。
+
+## Issue #3 UART 心跳验收
+
+点灯固件烧录并完成单向 UART 接线后，使用本机实际串口设备运行：
+
+```bash
+python3 tools/check_bringup_uart.py \
+  --port <serial-port> \
+  --required-heartbeats 3 \
+  --output data/raw/<new-bringup-record>.txt
+```
+
+工具固定按 115200 8N1 接收，并只接受
+`rpm_sync_bringup,v1,board=weact_g431_qfn48,mode=MONITOR_ONLY`。读取有总时限，原始记录使用独占创建模式，已有文件不会被覆盖。串口设备名只在本地命令行传入，不写进仓库记录。
+
+### Ubuntu 上 CH340 被 brltty 抢占
+
+若 `lsusb` 能看到 `1a86:7523`，但 `/dev/ttyUSB*` 设备节点出现后立即消失，并且内核日志包含 `interface 0 claimed by ch341 while 'brltty' sets config #1`，说明盲文终端服务错误抢占了 CH340，而不是 UART 接线或固件已经验证失败。
+
+本次启动可临时执行：
+
+```bash
+sudo systemctl mask --runtime brltty-udev.service
+sudo systemctl stop brltty-udev.service
+```
+
+随后必须拔下并重新插入 CH340，再确认：
+
+```bash
+systemctl is-enabled brltty-udev.service  # 预期 masked-runtime
+systemctl is-active brltty-udev.service   # 预期 inactive
+ls -l /dev/ttyUSB*
+```
+
+`--runtime` 只在本次开机期间有效，重启后恢复。是否永久禁用或卸载 `brltty` 取决于主机是否需要盲文设备支持，不作为项目脚本自动执行。
