@@ -1,14 +1,19 @@
 # STM32G431 固件骨架
 
-此目录当前只包含与硬件无关、可在主机上做语法检查的 C++17 应用层骨架。尚未创建 STM32CubeMX `.ioc`、`Core/` 或 `Drivers/`，因为最终定时器、GPIO、时钟树和板级接口均为 `TBD`。
+此目录包含与硬件无关、可在主机上检查的 C++17 应用层骨架，以及 Issue #3 使用的 STM32CubeMX/CubeIDE 最小点灯与 UART 工程。最终定时器、DMA、霍尔、PWM 和旁路引脚仍为 `TBD`；当前工程不能作为最终控制器配置。
+
+`rpm_sync_bringup.ioc` 是 Issue #3 专用的最小点灯/UART 配置，不是最终控制器引脚表。它只使用经 WeAct Studio V1.0 原理图和官方示例确认的板级资源：QFN48 `STM32G431CBU6`、`PC6` 用户 LED、`PA13/PA14` SWD，以及 STM32 数据手册支持的 `PA9/PA10` USART1。后续霍尔、PWM、旁路和 DMA 分配仍保持 `TBD`。
 
 ## 计划结构
 
 ```text
 firmware/stm32/
 ├── App/                         C++17 应用接口与纯逻辑骨架
-├── Core/                        由确认后的 CubeMX 工程生成（尚不存在）
-├── Drivers/                     由确认后的 CubeMX 工程生成（尚不存在）
+├── rpm_sync_bringup.ioc         Issue #3 最小点灯/UART 配置
+├── Inc/                         CubeMX 生成的初始化头文件
+├── Src/                         CubeMX 生成的初始化源码和启动心跳
+├── Drivers/                     STM32CubeG4 v1.6.3 所需 HAL/CMSIS 子集
+├── STM32CubeIDE/                IDE 工程、启动文件和链接脚本
 ├── README.md
 └── hardware_config_template.md
 ```
@@ -29,3 +34,39 @@ c++ -std=c++17 -Wall -Wextra -Werror -fsyntax-only firmware/stm32/App/*.cpp
 ```
 
 此命令不等同于 arm-none-eabi-g++ 交叉编译或 STM32 实机测试。嵌入式构建建议关闭 RTTI 和异常，但需在生成工程后通过尺寸与行为验证再固定编译选项。
+
+## 点灯与 UART 启动前检查
+
+先检查 CubeMX、CubeIDE、交叉编译器、下载器和调试器是否可发现：
+
+```bash
+python3 tools/check_stm32_toolchain.py
+```
+
+脚本会同时检查 `PATH` 和 STM32CubeIDE 的标准 Linux 安装目录。默认不打印本机绝对路径；`--show-paths` 只用于本地诊断，输出不得复制到仓库、Issue 或测试记录。
+
+当前最小工程固定使用：
+
+- WeAct Studio STM32G431 QFN48 V1.0、`STM32G431CBU6`；
+- HSI 16 MHz、`PC6` 状态灯、`PA9/USART1_TX`、115200 8N1；
+- STM32CubeMX 6.18.1、STM32CubeG4 v1.6.3、STM32CubeIDE 工程；
+- 每 500 ms 翻转 LED，每 1 s 发送 `rpm_sync_bringup,v1,...,mode=MONITOR_ONLY`。
+
+在 STM32CubeIDE 中导入 `firmware/stm32/STM32CubeIDE`。重新生成前必须安装 STM32CubeG4 v1.6.3，并选择只复制所需库文件；不得把本机固件包绝对路径写入 `.ioc`。
+
+`Debug` 和 `Release` 两个 configuration 均已启用 `convertbinary`，构建后除 `.elf` 还产出 `.bin`。USB DFU 下载只接受 `.bin`，因此该选项不能关闭；`tests/test_stm32_bringup_config.py` 对此有回归测试，防止重新生成工程时被覆盖。DFU 下载使用 `Release/rpm_sync_bringup.bin`。
+
+无图形界面时可用 headless 构建：
+
+```bash
+/path/to/stm32cubeide/headless-build.sh -data <临时工作区> \
+  -importAll firmware/stm32/STM32CubeIDE -cleanBuild all
+```
+
+临时工作区不要放在仓库内。`Debug/`、`Release/`、`*.elf`、`*.bin` 已被 `.gitignore` 覆盖。
+
+UART 仅允许单向连接：核心板 `PA9` 接 CH340 模块 `RXD`，两者 `GND` 相连。已测得 CH340 `TXD` 空闲电平约 5 V，因此 `TXD`、`5V`、`3V3`、`RTS`、`CTS` 均不得连接核心板。
+
+本实板已于 2026-09-01 确认可通过核心板 USB-C 进入 STM32 ROM DFU，并使用 STM32CubeProgrammer 完成固件写入和校验。PC6 LED 的 500 ms 翻转已通过复位启动及 USB-C 断电重启观察；这不等于 PA9 UART 已验证，也不等于 STM32 交叉调试链路已验证。
+
+点灯与 UART 属于 L1 测试：电机主电源必须断开，螺旋桨必须拆除，并避免 USB、ST-LINK 和外部电源之间反灌。

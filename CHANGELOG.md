@@ -11,12 +11,25 @@
 - synthetic/demo CSV、RPM 日志校验/绘图工具和基础测试。
 - GitHub Issue/PR 模板、标签、里程碑与三周任务规划。
 - AI 项目上下文、任务防重复规则和 Issue/Project 进度交接规范。
+- 面向两名成员的角色分工、逐日协作、交接依赖和共同复核安排。
+- STM32Cube 工具链发现脚本、主机测试和点灯/UART 启动前检查说明。
+- 基于 WeAct Studio QFN48 V1.0 官方原理图的 Issue #3 最小 CubeMX 点灯/UART 配置。
+- 可交叉编译的 STM32CubeIDE 最小工程、PC6 点灯节拍和 PA9 单向 UART 版本心跳；固件基于 STM32CubeG4 v1.6.3 的必要 HAL/CMSIS 子集。
+- Issue #3 配置回归测试，锁定板型、LED/SWD/UART 映射、MONITOR_ONLY 范围及工程元数据可移植性。
+- Issue #3 Ubuntu 端 UART 心跳验收工具，支持有界读取、严格版本/板型/模式校验和不可覆盖的原始记录。
+- `Debug`/`Release` 两个 configuration 的 `.bin` 产出（USB DFU 下载所需）及对应回归测试。
+- Q12 焊台可用性阻塞项，记录排针未焊接时被阻塞的引脚与任务范围。
 
 ### Changed
 
 - STM32 应用层技术栈确定为 C++17，模块扩展名改为 `.cpp/.hpp`。
 - 增加 C++17 主机语法检查，并明确 CubeMX HAL C 与应用层的 ABI 适配边界。
+- 记录 CH340 系列 USB-TTL 的枚举信息和 5V TXD 实测阻塞，要求确认 3.3V 配置或电平转换后再连接 STM32。
+- 明确 Issue #3 首次下载采用核心板 USB-C 单路供电，ST-LINK 只接 SWCLK、SWDIO 和 GND。
+- 实板确认核心板 USB-C 的 STM32 ROM DFU 下载路径可用；Issue #3 固件写入校验、PC6 LED 复位启动和断电冷启动观察通过，ST-LINK 改为调试/回退路径。
+- 记录 Linux 下 `0483:df11` 需要 udev 规则，以及 `-g` 跳转启动因 bootloader 残留 HSI48/PLL 可能停在 `Error_Handler()`，点灯判定必须冷启动或按 `RESET`。
+- 标注 SWD 三线位于 100mil 排针孔位，需先焊接排针，并说明无焊台时改用 USB DFU。
 
 ### Not verified
 
-- 所有硬件、电气、PWM、RPM、旁路和闭环控制行为均尚未实机验证。
+- PA9 UART、SWD 调试、电气接口、PWM、RPM、旁路和闭环控制行为尚未实机验证。

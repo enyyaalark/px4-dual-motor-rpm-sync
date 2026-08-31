@@ -11,8 +11,9 @@
 | ESC PWM 1 | 输出 | HCT157 B1 | `TBD` | 1000–2000µs 暂定 | 待分配 |
 | ESC PWM 2 | 输出 | HCT157 B2 | `TBD` | 1000–2000µs 暂定 | 待分配 |
 | Bypass select | 输出 | HCT157 S | `TBD` | 复位默认 PX4 直通 | 待分配 |
-| Telemetry TX | 输出 | USB-TTL/PX4 RX | `TBD` | 3.3V UART | 待分配 |
-| Status LED | 输出 | 板载/外部 LED | `TBD` | 点灯验证 | 待分配 |
+| Telemetry TX | 输出 | CH340 RXD（第一阶段） | `PA9 / USART1_TX` | 3.3V UART；仅单向连接 | Issue #3 bring-up 已分配，最终控制器待复核 |
+| Telemetry RX | 输入 | 第一阶段不连接 | `PA10 / USART1_RX` | CH340 TXD 实测 5V，禁止直连 | 仅为 USART1 初始化保留 |
+| Status LED | 输出 | 板载蓝色 LED | `PC6` | WeAct QFN48 V1.0，低速推挽输出 | Issue #3 bring-up 已确认 |
 
 ## 分配准则
 
