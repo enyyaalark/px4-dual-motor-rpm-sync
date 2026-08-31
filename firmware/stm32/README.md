@@ -67,6 +67,6 @@ python3 tools/check_stm32_toolchain.py
 
 UART 仅允许单向连接：核心板 `PA9` 接 CH340 模块 `RXD`，两者 `GND` 相连。已测得 CH340 `TXD` 空闲电平约 5 V，因此 `TXD`、`5V`、`3V3`、`RTS`、`CTS` 均不得连接核心板。
 
-本实板已于 2026-09-01 确认可通过核心板 USB-C 进入 STM32 ROM DFU，并使用 STM32CubeProgrammer 完成固件写入和校验。PC6 LED 的 500 ms 翻转已通过复位启动及 USB-C 断电重启观察。PA9 单向 UART 首次采集和 USB-C 断电约 5 秒后的第二次采集均获得至少 3 条完整、格式匹配的心跳。SWD 交叉调试链路仍未验证。
+本实板已于 2026-09-01 确认可通过核心板 USB-C 进入 STM32 ROM DFU，并使用 STM32CubeProgrammer 完成固件写入和校验。PC6 LED 的 500 ms 翻转已通过复位启动及 USB-C 断电重启观察。PA9 单向 UART 首次采集和 USB-C 断电约 5 秒后的第二次采集均获得至少 3 条完整、格式匹配的心跳；另外 30 秒连续采集获得 10/10 条有效心跳。SWD 交叉调试链路仍未验证。
 
 点灯与 UART 属于 L1 测试：电机主电源必须断开，螺旋桨必须拆除，并避免 USB、ST-LINK 和外部电源之间反灌。
