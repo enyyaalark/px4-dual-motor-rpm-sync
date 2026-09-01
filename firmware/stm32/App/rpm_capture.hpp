@@ -8,6 +8,7 @@ struct RpmCapture {
     std::uint32_t previous_tick{};
     std::uint32_t period_ticks{};
     std::uint32_t last_pulse_ms{};
+    bool has_pulse{};
     bool has_period{};
 };
 
