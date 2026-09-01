@@ -34,5 +34,5 @@
 - Q03：临时照片可读到 FlySky `FS-iA10B`；厂家规格列出 AFHDS 2A、10 路 PWM，以及 PWM/PPM/i.bus/s.bus 数据接口。照片不证明当前接收机配置。
 - Q04：临时照片可读到 Flycolor Raptor 5、35A、3–6S；厂家产品页对应 `Raptor5 G071-35A`，厂家手册列出 35A 持续、40A/10秒、无 BEC、3–6S，并支持普通 1–2ms PWM。用户后续确认第二只 ESC 同型号；两只实际固件、配置和输入电平阈值仍需实物/测量证据。
 - 临时照片文件名和厂家链接记录在 `docs/hardware-overview.md`；`Pictures/` 不进入版本控制。
-- Q02：仅 USB 供电条件下通过 MAVLink 读取 PX4 v1.12.3；同时发现 `SYS_AUTOSTART=1001`、`SYS_HITL=0`、MAIN 1–4/400Hz/1075–1950us。PX4 v1.12 文档将 1001 定义为 HIL Quadcopter X，因此该配置不得用于本项目动力测试。完整只读记录见 `docs/hardware-overview.md`。
+- Q02：仅 USB 供电条件下通过 MAVLink 读取 PX4 v1.12.3；同时发现 `SYS_AUTOSTART=1001`、`SYS_HITL=0`、MAIN 1–4/400Hz/1075–1950us。用户已确认台架逻辑映射为 `MAIN1 -> 左侧后推`、`MAIN2 -> 右侧后推`，两路使用相同基础指令；但 PX4 v1.12 文档将 1001 定义为 HIL Quadcopter X，因此通道映射不解除动力测试阻塞。完整只读记录见 `docs/hardware-overview.md`。
 - Q04/Q05/布局：用户确认验证结构为双发后推布局，两只 ESC 同型号，并提供电池 3S1P、11.1V、100C 信息。未提供容量，故不能计算 100C 对应的理论电流；动力测试继续等待电池标签/实测与电气复核。

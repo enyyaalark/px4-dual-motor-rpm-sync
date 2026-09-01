@@ -42,6 +42,7 @@
 - 根据实物照片与厂家资料部分确认 Pixhawk 6C Mini、FlySky FS-iA10B 和一只 Flycolor Raptor5 G071-35A；硬件修订、实际协议/固件、电平与第二只电调一致性继续保持 `TBD`。
 - 通过 USB/MAVLink 只读确认 Pixhawk 运行 PX4 v1.12.3，并记录当前 HIL Quadcopter X 机架与 MAIN PWM 参数；因机架配置不符合双发固定翼目标，在独立评审和波形验证前阻止动力连接。
 - 记录验证结构为双发后推布局、两只 Flycolor Raptor5 G071-35A 电调一致，以及电池为 3S1P/额定 11.1V/100C；容量、实测电压和动力连接条件继续保持 `TBD`。
+- 固定第一阶段台架逻辑映射为 Pixhawk MAIN1 对应左侧后推电机、MAIN2 对应右侧后推电机，两路使用相同基础指令；电气验证和错误机架配置的安全阻塞保持不变。
 
 ### Not verified
 
