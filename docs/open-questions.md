@@ -7,8 +7,8 @@
 | Q01 | 飞控外壳已确认 `Pixhawk 6C Mini`；制造商和 Model A/B/legacy 硬件修订仍待确认 | 修订决定 PWM 电压选择位置和部分硬件能力 | role:hardware | PWM 电平确认与最终接线 |
 | Q02 | PX4 固件已通过 MAVLink 确认为 v1.12.3；当前 `SYS_AUTOSTART=1001`（HIL Quadcopter X）与项目目标不一致，待单独评审/更正 | 参数名、输出协议和行为需要绑定该版本；机架错误时禁止动力连接 | role:firmware | PX4 安全配置复现 |
 | Q03 | 接收机已确认 FlySky `FS-iA10B`，厂家协议为 AFHDS 2A；当前使用的 PWM/PPM/i.bus/s.bus 输出模式仍待确认 | 决定 PX4 输入配置 | role:hardware | 遥控全链路 |
-| Q04 | 一只 ESC 已确认 Flycolor `Raptor5 G071-35A`；第二只一致性、实刷固件版本、配置、3.3V 接受度和失联行为仍待确认 | 决定 PWM 范围、刷新率和安全行为 | role:hardware | PWM 输出/安全 |
-| Q05 | 电池节数和电压 | 决定动力风险、转速范围和降压设计 | role:hardware | 带电机测试 |
+| Q04 | 两只 ESC 已确认为相同的 Flycolor `Raptor5 G071-35A`；实刷固件版本、配置、3.3V 接受度和失联行为仍待确认 | 决定 PWM 范围、刷新率和安全行为 | role:hardware | PWM 输出/安全 |
+| Q05 | 电池已确认为 3S1P，用户提供额定 11.1V、100C；容量、化学体系、满充/当前实测电压、连接器和线规仍待确认 | 容量与 C 倍率共同决定理论电流；实测电压和连接决定动力风险与降压设计 | role:hardware | 带电机测试 |
 | Q06 | 螺旋桨尺寸与旋向 | 决定负载和机械安全 | role:hardware | 带桨测试 |
 | Q07 | 最终 STM32 定时器/GPIO 分配 | 决定 CubeMX 工程与布线 | role:firmware | `.ioc` 和固件集成 |
 | Q08 | 独立激光转速计型号/可用性 | PPR 和 3% 误差目标需要参考 | 两人共同 | M1 标定 |
@@ -32,6 +32,7 @@
 
 - Q01：临时照片可读到 `pixhawk 6c mini`；Holybro 同型号资料显示 PWM 输出可能随硬件修订/焊盘配置为 3.3V 或 5V，因此在查看底部标签/硬件修订并实测前，不关闭电平相关问题。
 - Q03：临时照片可读到 FlySky `FS-iA10B`；厂家规格列出 AFHDS 2A、10 路 PWM，以及 PWM/PPM/i.bus/s.bus 数据接口。照片不证明当前接收机配置。
-- Q04：临时照片可读到 Flycolor Raptor 5、35A、3–6S；厂家产品页对应 `Raptor5 G071-35A`，厂家手册列出 35A 持续、40A/10秒、无 BEC、3–6S，并支持普通 1–2ms PWM。实际固件、输入电平阈值和第二只 ESC 仍需实物/测量证据。
+- Q04：临时照片可读到 Flycolor Raptor 5、35A、3–6S；厂家产品页对应 `Raptor5 G071-35A`，厂家手册列出 35A 持续、40A/10秒、无 BEC、3–6S，并支持普通 1–2ms PWM。用户后续确认第二只 ESC 同型号；两只实际固件、配置和输入电平阈值仍需实物/测量证据。
 - 临时照片文件名和厂家链接记录在 `docs/hardware-overview.md`；`Pictures/` 不进入版本控制。
 - Q02：仅 USB 供电条件下通过 MAVLink 读取 PX4 v1.12.3；同时发现 `SYS_AUTOSTART=1001`、`SYS_HITL=0`、MAIN 1–4/400Hz/1075–1950us。PX4 v1.12 文档将 1001 定义为 HIL Quadcopter X，因此该配置不得用于本项目动力测试。完整只读记录见 `docs/hardware-overview.md`。
+- Q04/Q05/布局：用户确认验证结构为双发后推布局，两只 ESC 同型号，并提供电池 3S1P、11.1V、100C 信息。未提供容量，故不能计算 100C 对应的理论电流；动力测试继续等待电池标签/实测与电气复核。

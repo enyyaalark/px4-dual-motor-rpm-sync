@@ -41,6 +41,7 @@
 - 澄清项目状态：STM32 最小 bring-up 与硬件无关控制保护已超前完成，但 M1 所需的霍尔/PPR/RPM 实机条件仍未满足。
 - 根据实物照片与厂家资料部分确认 Pixhawk 6C Mini、FlySky FS-iA10B 和一只 Flycolor Raptor5 G071-35A；硬件修订、实际协议/固件、电平与第二只电调一致性继续保持 `TBD`。
 - 通过 USB/MAVLink 只读确认 Pixhawk 运行 PX4 v1.12.3，并记录当前 HIL Quadcopter X 机架与 MAIN PWM 参数；因机架配置不符合双发固定翼目标，在独立评审和波形验证前阻止动力连接。
+- 记录验证结构为双发后推布局、两只 Flycolor Raptor5 G071-35A 电调一致，以及电池为 3S1P/额定 11.1V/100C；容量、实测电压和动力连接条件继续保持 `TBD`。
 
 ### Not verified
 
