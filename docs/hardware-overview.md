@@ -39,7 +39,7 @@
 
 | 临时照片 | 可确认内容 | 不能由照片确认 |
 |---|---|---|
-| `7f6325c0951edf70ecb6a66b5a37cfc5.png` | 外壳正面标识 `pixhawk 6c mini`，带 MAIN 1–8、AUX 1–4、AUX5、AUX6 和 RC IN | 制造商、Model A/B/legacy 修订、PWM 电压焊盘状态、PX4 固件版本和参数 |
+| `7f6325c0951edf70ecb6a66b5a37cfc5.png` | 用户确认照片为外壳底面；可读到 `pixhawk 6c mini`，以及 MAIN 1–8、AUX 1–4、AUX5、AUX6 和 RC IN | 该底面没有可读的制造商、Model A/B/legacy 修订或 PWM 电压焊盘状态；照片也不能确认 PX4 固件版本和参数 |
 | `8331a393389e3762310df1afeb5515b0.png` | FlySky `FS-iA10B`，外壳标出 SERVO、SENS、B/VCC、BIND 和 PPM/i-BUS 相关端口 | 当前绑定状态、实际选择的 PWM/PPM/i.bus/s.bus 输出模式和输出电平 |
 | `d761b629ed0799d37f86dbc523ed2c4a.png` | 一只 Flycolor Raptor 5、35A、3–6S 单体电调；用户后续确认第二只同型号 | 照片本身不能证明第二只一致；两只实刷固件版本、配置参数、输入阈值和失联行为仍待确认 |
 

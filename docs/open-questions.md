@@ -30,7 +30,7 @@
 
 ## 2026-09-01 部分确认记录
 
-- Q01：临时照片可读到 `pixhawk 6c mini`；Holybro 同型号资料显示 PWM 输出可能随硬件修订/焊盘配置为 3.3V 或 5V，因此在查看底部标签/硬件修订并实测前，不关闭电平相关问题。
+- Q01：用户确认现有临时照片展示飞控底面，可读到 `pixhawk 6c mini` 和 MAIN/AUX/RC IN 端口编号；但该底面没有可读的制造商、Model A/B/legacy 修订或 PWM 电压焊盘状态。Holybro 同型号资料显示 PWM 输出可能随硬件修订/焊盘配置为 3.3V 或 5V，因此在获得其他修订证据并实测前，不关闭电平相关问题。
 - Q03：临时照片可读到 FlySky `FS-iA10B`；厂家规格列出 AFHDS 2A、10 路 PWM，以及 PWM/PPM/i.bus/s.bus 数据接口。照片不证明当前接收机配置。
 - Q04：临时照片可读到 Flycolor Raptor 5、35A、3–6S；厂家产品页对应 `Raptor5 G071-35A`，厂家手册列出 35A 持续、40A/10秒、无 BEC、3–6S，并支持普通 1–2ms PWM。用户后续确认第二只 ESC 同型号；两只实际固件、配置和输入电平阈值仍需实物/测量证据。
 - 临时照片文件名和厂家链接记录在 `docs/hardware-overview.md`；`Pictures/` 不进入版本控制。
