@@ -6,7 +6,8 @@
 
 ```text
 [RC] -> [Receiver] -> [PX4]
-                         | base PWM 1/2
+                         | MAIN1=left / MAIN2=right
+                         | equal base PWM in phase 1
                          v
 Hall 1 -> HC14 -> +-------------------+ corrected PWM 1/2
 Hall 2 -> HC14 -> | STM32G431         |------------------+
@@ -19,6 +20,8 @@ Hall 2 -> HC14 -> | STM32G431         |------------------+
                                                            |
                                                        ESC1 / ESC2
 ```
+
+左右以机体向前观察时的机体左/右为准。第一阶段逻辑映射固定为 `MAIN1 -> 左侧后推电机`、`MAIN2 -> 右侧后推电机`；这不代表当前 PX4 机架或电气接口已经验证。
 
 ## 职责划分
 
