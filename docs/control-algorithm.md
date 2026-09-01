@@ -49,6 +49,8 @@ RPM = 60 * pulse_frequency_hz / pulses_per_revolution
 
 这些状态只完成纯计算和异常隔离，尚未接入 HAL、中断、故障标志或控制状态机。最大 RPM、脉冲跳变阈值和停止超时必须根据实测波形及转速范围确定，主机合成测试不能代替该标定。
 
+`system_controller` 已把上述模块组合成硬件无关周期步骤：基础 PWM 有效时才产生双路输出，非同步状态只透传基础指令，`SYNC_CONTROL` 才施加受限修正。故障刷新目前使用非锁存活动故障；安全关键故障是否锁存以及 `kOutputSaturated` 的门控语义仍待故障注入实验后确定。
+
 ## 误差
 
 第一阶段仅在 `base_pwm1 == base_pwm2`（允许小容差）时验证同步：

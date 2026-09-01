@@ -42,6 +42,7 @@ Hall 2 -> HC14 -> | STM32G431         |------------------+
 - `fault_manager`：锁存/非锁存故障与状态迁移。
 - `bypass_control`：自检前默认直通、旁路请求。
 - `telemetry_uart`：固定字段 CSV 输出。
+- `system_controller`：组合上述模块，执行周期采样、故障刷新、状态迁移和遥测组装。
 
 ## 状态机
 
@@ -58,6 +59,23 @@ INIT --自检通过--> MONITOR_ONLY --人工使能且条件满足--> SYNC_CONTRO
 - `SYNC_CONTROL`：仅在双路输入有效、RPM 高于阈值且基础目标允许时闭环。
 - `BYPASS`：选择 PX4 原始 PWM；仍尽量输出故障遥测。
 - `FAULT`：停止积分和修正，根据故障策略转入旁路或安全状态。
+
+### 硬件无关状态机组合
+
+`system_controller` 是应用层的硬件无关组合层：HAL/中断层先把双路霍尔脉冲写入两个 `RpmCapture`、把 PX4 脉宽写入 `PwmInput`，周期任务再调用 `step(controller, now_ms, dt_seconds)` 得到最新 `AppState`、旁路选择、双路 PWM 和可直接交给 `telemetry_uart` 的 `TelemetrySample`。
+
+它按下面顺序刷新，并保持“修正 PWM 只有在自检完成、无人工旁路、无故障且输入有效时才可选”的不变量：
+
+1. 计算两路 `RpmReading` 和 `PwmInputReading`；
+2. 把霍尔超时、异常脉冲和 PWM 输入无效刷新为活动故障；
+3. 用 `bypass_control` 和 `fault_manager` 计算修正 PWM 是否允许；
+4. 仅当修正允许、人工使能、基础 PWM 有效且两路 RPM 均高于最小闭环转速时启用 `sync_controller`；
+5. 以 `base_pwm - correction` 和 `base_pwm + correction` 通过 `pwm_output` 限幅，基础 PWM 无效时两路输出为 0；
+6. 生成遥测样本并更新 `INIT/MONITOR_ONLY/SYNC_CONTROL/BYPASS/FAULT` 状态。
+
+旁路选择信号等于第 3 步的门控结果，与是否进入 `SYNC_CONTROL` 无关；`MONITOR_ONLY` 中修正量为 0，因此选择“修正 PWM”等同于透传基础指令。
+
+当前版本只完成主机侧逻辑验证。故障锁存策略、`kOutputSaturated` 与旁路门控的关系、`FAULT -> BYPASS` 的具体迁移，以及低速 `error_percent` 哨兵仍保持 `TBD`，需要在对应 Issue 中评审；未接入 HAL、定时器、DMA 或 UART 发送层，不能据此声称实机状态机已工作。
 
 ### 硬件无关旁路门控
 
