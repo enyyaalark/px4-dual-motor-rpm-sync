@@ -8,6 +8,10 @@ namespace rpm_sync::config {
 inline constexpr std::uint16_t kPwmInputMinUs = 0U;
 inline constexpr std::uint16_t kPwmInputMaxUs = 0U;
 
+// ESC output bounds remain invalid/TBD until both ESCs are calibrated.
+inline constexpr std::uint16_t kPwmOutputMinUs = 0U;
+inline constexpr std::uint16_t kPwmOutputMaxUs = 0U;
+
 // Closed-loop control remains disabled until hardware calibration.
 inline constexpr bool kSyncControlDefaultOn = false;
 inline constexpr float kPulsesPerRevolution = 0.0F;
