@@ -26,6 +26,9 @@ data/raw/*
 data/processed/*
 !data/processed/.gitkeep
 
+# Temporary hardware photo inbox
+Pictures/
+
 # Editors and OS
 .DS_Store
 .idea/

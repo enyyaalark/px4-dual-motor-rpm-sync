@@ -12,14 +12,33 @@
 - GitHub Issue/PR 模板、标签、里程碑与三周任务规划。
 - AI 项目上下文、任务防重复规则和 Issue/Project 进度交接规范。
 - 硬件无关 RPM 状态计算与 C++17 主机测试，覆盖首脉冲、32 位回绕、超时归零、无效配置和异常脉冲隔离。
+- 面向两名成员的角色分工、逐日协作、交接依赖和共同复核安排。
+- 新增固件负责人待做清单，分开记录已完成、等待 PR 合并、可独立推进和硬件阻塞项。
+- STM32Cube 工具链发现脚本、主机测试和点灯/UART 启动前检查说明。
+- 基于 WeAct Studio QFN48 V1.0 官方原理图的 Issue #3 最小 CubeMX 点灯/UART 配置。
+- 可交叉编译的 STM32CubeIDE 最小工程、PC6 点灯节拍和 PA9 单向 UART 版本心跳；固件基于 STM32CubeG4 v1.6.3 的必要 HAL/CMSIS 子集。
+- Issue #3 配置回归测试，锁定板型、LED/SWD/UART 映射、MONITOR_ONLY 范围及工程元数据可移植性。
+- Issue #3 Ubuntu 端 UART 心跳验收工具，支持有界读取、严格版本/板型/模式校验和不可覆盖的原始记录。
+- `Debug`/`Release` 两个 configuration 的 `.bin` 产出（USB DFU 下载所需）及对应回归测试。
+- Q12 排针可用性阻塞项，区分已组装的两侧 I/O 排针与仍未焊接的中央 SWD 孔位。
 
 ### Changed
 
 - STM32 应用层技术栈确定为 C++17，模块扩展名改为 `.cpp/.hpp`。
 - 增加 C++17 主机语法检查，并明确 CubeMX HAL C 与应用层的 ABI 适配边界。
 - RPM 采集状态不再用零时间戳表示“尚无脉冲”；诊断原始 RPM 与可供后续控制使用的有效 RPM 分离。
+- 记录 CH340 系列 USB-TTL 的枚举信息和 5V TXD 实测阻塞，要求确认 3.3V 配置或电平转换后再连接 STM32。
+- 明确 Issue #3 首次下载采用核心板 USB-C 单路供电，ST-LINK 只接 SWCLK、SWDIO 和 GND。
+- 实板确认核心板 USB-C 的 STM32 ROM DFU 下载路径可用；Issue #3 固件写入校验、PC6 LED 复位启动和断电冷启动观察通过，ST-LINK 改为调试/回退路径。
+- 记录 Linux 下 `0483:df11` 需要 udev 规则，以及 `-g` 跳转启动因 bootloader 残留 HSI48/PLL 可能停在 `Error_Handler()`，点灯判定必须冷启动或按 `RESET`。
+- 标注 SWD 三线位于 100mil 排针孔位，需先焊接排针，并说明无焊台时改用 USB DFU。
+- 记录 Ubuntu `brltty-udev` 抢占 CH340、导致 `ttyUSB0` 立即消失的诊断特征及仅本次启动生效的恢复步骤。
+- 实板确认 `PA9/USART1_TX -> CH340 RXD` 的 115200 8N1 单向心跳；首次采集获得 3 条完整心跳，USB-C 断电约 5 秒后再采集仍获得 3/3 条有效心跳。
+- 实板 UART 连续 30 秒稳定性采集获得 10/10 条格式匹配心跳。
+- 完善硬件无关的同步控制器边界：RPM 死区、对称修正限幅、积分限幅和饱和方向条件积分抗 windup，并增加实际 C++ 控制器执行测试。
+- 澄清项目状态：STM32 最小 bring-up 与硬件无关控制保护已超前完成，但 M1 所需的霍尔/PPR/RPM 实机条件仍未满足。
 
 ### Not verified
 
-- 所有硬件、电气、PWM、RPM、旁路和闭环控制行为均尚未实机验证。
+- SWD 调试、其他电气接口、PWM、RPM、旁路和闭环控制行为尚未实机验证。
 - RPM 主机测试仅使用 synthetic 参数；最终 PPR、计时器频率、超时、最大 RPM、异常跳变阈值和实机误差仍未验证。
