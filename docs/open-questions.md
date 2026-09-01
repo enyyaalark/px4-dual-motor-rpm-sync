@@ -4,10 +4,10 @@
 
 | ID | 待确认项 | 为什么重要 | 负责人建议 | 阻塞内容 |
 |---|---|---|---|---|
-| Q01 | PX4 飞控准确型号 | 决定输出端口、电平和固件能力 | role:hardware | PWM 接线与参数 |
+| Q01 | 飞控外壳已确认 `Pixhawk 6C Mini`；制造商和 Model A/B/legacy 硬件修订仍待确认 | 修订决定 PWM 电压选择位置和部分硬件能力 | role:hardware | PWM 电平确认与最终接线 |
 | Q02 | PX4 固件版本 | 参数名、输出协议和行为可能不同 | role:firmware | PX4 配置复现 |
-| Q03 | 接收机型号与协议 | 决定 PX4 输入配置 | role:hardware | 遥控全链路 |
-| Q04 | ESC 型号与固件 | 决定 PWM 范围、刷新率、3.3V 接受度和失联行为 | role:hardware | PWM 输出/安全 |
+| Q03 | 接收机已确认 FlySky `FS-iA10B`，厂家协议为 AFHDS 2A；当前使用的 PWM/PPM/i.bus/s.bus 输出模式仍待确认 | 决定 PX4 输入配置 | role:hardware | 遥控全链路 |
+| Q04 | 一只 ESC 已确认 Flycolor `Raptor5 G071-35A`；第二只一致性、实刷固件版本、配置、3.3V 接受度和失联行为仍待确认 | 决定 PWM 范围、刷新率和安全行为 | role:hardware | PWM 输出/安全 |
 | Q05 | 电池节数和电压 | 决定动力风险、转速范围和降压设计 | role:hardware | 带电机测试 |
 | Q06 | 螺旋桨尺寸与旋向 | 决定负载和机械安全 | role:hardware | 带桨测试 |
 | Q07 | 最终 STM32 定时器/GPIO 分配 | 决定 CubeMX 工程与布线 | role:firmware | `.ioc` 和固件集成 |
@@ -27,3 +27,10 @@
 复核人：
 受影响文件：
 ```
+
+## 2026-09-01 部分确认记录
+
+- Q01：临时照片可读到 `pixhawk 6c mini`；Holybro 同型号资料显示 PWM 输出可能随硬件修订/焊盘配置为 3.3V 或 5V，因此在查看底部标签/硬件修订并实测前，不关闭电平相关问题。
+- Q03：临时照片可读到 FlySky `FS-iA10B`；厂家规格列出 AFHDS 2A、10 路 PWM，以及 PWM/PPM/i.bus/s.bus 数据接口。照片不证明当前接收机配置。
+- Q04：临时照片可读到 Flycolor Raptor 5、35A、3–6S；厂家产品页对应 `Raptor5 G071-35A`，厂家手册列出 35A 持续、40A/10秒、无 BEC、3–6S，并支持普通 1–2ms PWM。实际固件、输入电平阈值和第二只 ESC 仍需实物/测量证据。
+- 临时照片文件名和厂家链接记录在 `docs/hardware-overview.md`；`Pictures/` 不进入版本控制。

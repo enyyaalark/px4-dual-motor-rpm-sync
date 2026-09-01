@@ -5,9 +5,10 @@
 | 类别 | 器件 | 数量/状态 | 备注 |
 |---|---|---:|---|
 | 控制 | STM32G431CBU6 WeAct 核心板 | 2 | 一块主用，一块备用/并行验证 |
-| 飞控 | PX4 固件飞控板 | 1，型号 `TBD` | 固件版本 `TBD` |
+| 飞控 | Pixhawk 6C Mini | 1，照片确认 | 制造商/硬件修订和 PX4 固件版本仍为 `TBD` |
+| 遥控 | FlySky FS-iA10B 接收机 | 1，照片确认 | 厂家规格为 AFHDS 2A，支持 PWM/PPM/i.bus/s.bus；实际绑定和输出模式 `TBD` |
 | 动力 | RS2205 2300KV 电机 | 2 | 不在面包板上承载主电流 |
-| 动力 | 同型号电调 | 2，型号 `TBD` | 输入电平和协议待确认 |
+| 动力 | Flycolor Raptor5 G071-35A 电调 | 2，照片确认其中 1 只 | 厂家规格 3–6S、35A 持续/40A 10 秒、无 BEC；第二只一致性、实刷固件版本和 3.3V 输入兼容性待确认 |
 | 传感 | A3144E 数字霍尔开关 | 5 | 2 使用、3 备用 |
 | 整形 | SN74HC14N | 1+ | 3.3V 供电能力需按实物数据手册确认 |
 | 选择 | SN74HCT157N | 1+ | 供电、电平阈值和默认选择需台架验证 |
@@ -25,13 +26,28 @@
 
 | 接口 | 发送端电平/协议 | 接收端要求 | 状态 |
 |---|---|---|---|
-| PX4 -> STM32 | `TBD`，期望标准 PWM | 3.3V 容限和定时器捕获 | 待测 |
+| PX4 -> STM32 | Pixhawk 6C Mini PWM 输出；实际为 3.3V/5V、频率和脉宽均待测 | 3.3V 容限和定时器捕获 | 厂家资料显示不同修订可硬件选择 3.3V/5V，禁止仅凭型号接线 |
 | STM32 -> HCT157 | 3.3V PWM | HCT157 输入高阈值 | 待数据手册/实测 |
-| HCT157 -> ESC | `TBD` | ESC 控制高阈值 | 待实测 |
+| HCT157 -> ESC | 标准 1–2ms PWM（Raptor 5 厂家手册支持） | ESC 控制高阈值仍 `TBD` | 协议能力已查证；3.3V 高电平兼容性和实际校准范围待实测 |
 | A3144E -> HC14 | 开集电极 + 3.3V 上拉 | HC14 施密特输入 | 待台架波形 |
 | STM32 -> CH340 USB-TTL | 3.3V UART TX，115200 8N1（Issue #3 bring-up） | CH340 RXD | L1 单向心跳与断电重启后采集已实测通过 |
 | CH340 USB-TTL -> STM32 | TXD 空闲高电平实测 5V | 仅在增加合规电平转换后连接 | 阻塞；第一阶段保持断开 |
 | STM32 -> PX4 | 3.3V UART，波特率 `TBD` | PX4 RX 电平/协议 | 后续阶段待确认 |
+
+## 2026-09-01 照片识别记录
+
+| 临时照片 | 可确认内容 | 不能由照片确认 |
+|---|---|---|
+| `7f6325c0951edf70ecb6a66b5a37cfc5.png` | 外壳正面标识 `pixhawk 6c mini`，带 MAIN 1–8、AUX 1–4、AUX5、AUX6 和 RC IN | 制造商、Model A/B/legacy 修订、PWM 电压焊盘状态、PX4 固件版本和参数 |
+| `8331a393389e3762310df1afeb5515b0.png` | FlySky `FS-iA10B`，外壳标出 SERVO、SENS、B/VCC、BIND 和 PPM/i-BUS 相关端口 | 当前绑定状态、实际选择的 PWM/PPM/i.bus/s.bus 输出模式和输出电平 |
+| `d761b629ed0799d37f86dbc523ed2c4a.png` | 一只 Flycolor Raptor 5、35A、3–6S 单体电调 | 第二只电调是否完全相同、实刷固件版本、配置参数、输入阈值和失联行为 |
+
+照片位于 `.gitignore` 忽略的临时 `Pictures/` 收件箱，不作为可长期访问的仓库证据。型号规格另由厂家资料交叉核对：
+
+- Pixhawk 6C Mini 文档：<https://docs.holybro.com/autopilot/pixhawk-6c-mini>
+- FlySky FS-iA10B 规格：<https://www.flysky-cn.com/ia10b-canshu>
+- Flycolor Raptor5 G071 产品页：<https://www.fly-color.net/index.php?c=category&id=234>
+- Flycolor Raptor 5 厂家手册：<https://en.fly-color.net/uploadfile/202209/88d64251ad.pdf>
 
 ## 机械安装
 
