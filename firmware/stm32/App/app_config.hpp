@@ -4,9 +4,9 @@
 
 namespace rpm_sync::config {
 
-// Provisional protocol bounds; replace only after ESC calibration.
-inline constexpr std::uint16_t kPwmMinUs = 1000U;
-inline constexpr std::uint16_t kPwmMaxUs = 2000U;
+// PX4 input bounds remain invalid/TBD until its actual output is measured.
+inline constexpr std::uint16_t kPwmInputMinUs = 0U;
+inline constexpr std::uint16_t kPwmInputMaxUs = 0U;
 
 // Closed-loop control remains disabled until hardware calibration.
 inline constexpr bool kSyncControlDefaultOn = false;
