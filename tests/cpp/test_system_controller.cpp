@@ -195,6 +195,102 @@ bool testHallTimeoutForcesFaultAndRecovers() {
                   "a cleared non-latched fault must recover to sync control");
 }
 
+bool testPwmTimeoutForcesFaultAndRecovers() {
+    SystemController controller = configuredController();
+    controller.sync.integral = 42.0F;
+
+    const SystemStepResult timed_out = rpm_sync::step(controller, 101U, 0.1F);
+    const std::uint32_t fault_flags = timed_out.telemetry.fault_flags;
+
+    rpm_sync::onPwmInput(controller, 1'400U, 101U);
+    const SystemStepResult recovered = rpm_sync::step(controller, 101U, 0.1F);
+
+    return expect(timed_out.state == AppState::kFault,
+                  "PWM timeout must force FAULT state") &&
+           expect(!timed_out.select_corrected,
+                  "PWM timeout must keep raw PX4 bypass selected") &&
+           expect((fault_flags &
+                   rpm_sync::toMask(FaultFlag::kPwmInputInvalid)) != 0U,
+                  "PWM timeout must set the PWM input fault") &&
+           expect((fault_flags &
+                   (rpm_sync::toMask(FaultFlag::kHall1Timeout) |
+                    rpm_sync::toMask(FaultFlag::kHall2Timeout))) == 0U,
+                  "isolated PWM timeout must not set hall timeout faults") &&
+           expect(timed_out.telemetry.correction_us == 0.0F,
+                  "PWM timeout must clear correction") &&
+           expect(controller.sync.integral == 0.0F,
+                  "PWM timeout must clear controller integral") &&
+           expect(recovered.state == AppState::kSyncControl,
+                  "a fresh PWM sample must clear the non-latched fault") &&
+           expect(recovered.select_corrected,
+                  "recovered valid inputs must allow corrected selection") &&
+           expect((recovered.telemetry.fault_flags &
+                   rpm_sync::toMask(FaultFlag::kPwmInputInvalid)) == 0U,
+                  "recovery must clear the active PWM input fault");
+}
+
+bool testPwmOutOfRangeForcesFaultAndRecovers() {
+    SystemController controller = configuredController();
+    controller.sync.integral = 42.0F;
+    rpm_sync::onPwmInput(controller, 999U, 6U);
+
+    const SystemStepResult out_of_range =
+        rpm_sync::step(controller, 6U, 0.1F);
+
+    rpm_sync::onPwmInput(controller, 1'400U, 6U);
+    const SystemStepResult recovered = rpm_sync::step(controller, 6U, 0.1F);
+
+    return expect(out_of_range.state == AppState::kFault,
+                  "out-of-range PWM must force FAULT state") &&
+           expect(!out_of_range.select_corrected,
+                  "out-of-range PWM must keep raw PX4 bypass selected") &&
+           expect((out_of_range.telemetry.fault_flags &
+                   rpm_sync::toMask(FaultFlag::kPwmInputInvalid)) != 0U,
+                  "out-of-range PWM must set the PWM input fault") &&
+           expect(out_of_range.telemetry.correction_us == 0.0F,
+                  "out-of-range PWM must clear correction") &&
+           expect(controller.sync.integral == 0.0F,
+                  "out-of-range PWM must clear controller integral") &&
+           expect(recovered.state == AppState::kSyncControl,
+                  "in-range PWM must clear the non-latched fault") &&
+           expect(recovered.select_corrected,
+                  "recovered in-range PWM must allow corrected selection");
+}
+
+bool testImplausibleHallPulseForcesFaultAndRecovers() {
+    SystemController controller = configuredController();
+    controller.sync.integral = 42.0F;
+    rpm_sync::onHallPulse(controller, 0U, 16'000U, 6U);
+
+    const SystemStepResult implausible =
+        rpm_sync::step(controller, 6U, 0.1F);
+
+    rpm_sync::onHallPulse(controller, 0U, 21'000U, 7U);
+    const SystemStepResult recovered = rpm_sync::step(controller, 7U, 0.1F);
+
+    return expect(implausible.state == AppState::kFault,
+                  "implausible hall pulse must force FAULT state") &&
+           expect(!implausible.select_corrected,
+                  "implausible hall pulse must keep raw PX4 bypass selected") &&
+           expect((implausible.telemetry.fault_flags &
+                   rpm_sync::toMask(FaultFlag::kHallImplausible)) != 0U,
+                  "implausible hall pulse must set the hall fault") &&
+           expect((implausible.telemetry.fault_flags &
+                   rpm_sync::toMask(FaultFlag::kPwmInputInvalid)) == 0U,
+                  "isolated hall fault must not set the PWM input fault") &&
+           expect(implausible.telemetry.correction_us == 0.0F,
+                  "implausible hall pulse must clear correction") &&
+           expect(controller.sync.integral == 0.0F,
+                  "implausible hall pulse must clear controller integral") &&
+           expect(recovered.state == AppState::kSyncControl,
+                  "a plausible hall period must clear the non-latched fault") &&
+           expect(recovered.select_corrected,
+                  "recovered hall inputs must allow corrected selection") &&
+           expect((recovered.telemetry.fault_flags &
+                   rpm_sync::toMask(FaultFlag::kHallImplausible)) == 0U,
+                  "recovery must clear the active hall fault");
+}
+
 bool testLowRpmDisablesSync() {
     SystemController controller = configuredController();
     rpm_sync::onHallPulse(controller, 0U, 110'000U, 5U);
@@ -238,6 +334,9 @@ int main() {
     passed = testSyncControlAppliesBoundedCorrection() && passed;
     passed = testManualBypassOverridesReadyConditions() && passed;
     passed = testHallTimeoutForcesFaultAndRecovers() && passed;
+    passed = testPwmTimeoutForcesFaultAndRecovers() && passed;
+    passed = testPwmOutOfRangeForcesFaultAndRecovers() && passed;
+    passed = testImplausibleHallPulseForcesFaultAndRecovers() && passed;
     passed = testLowRpmDisablesSync() && passed;
     passed = testResetClearsRuntimeState() && passed;
     if (!passed) {
