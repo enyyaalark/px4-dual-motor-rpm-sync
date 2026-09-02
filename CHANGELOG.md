@@ -27,6 +27,7 @@
 - Issue #3 Ubuntu 端 UART 心跳验收工具，支持有界读取、严格版本/板型/模式校验和不可覆盖的原始记录。
 - `Debug`/`Release` 两个 configuration 的 `.bin` 产出（USB DFU 下载所需）及对应回归测试。
 - Q12 排针可用性阻塞项，区分已组装的两侧 I/O 排针与仍未焊接的中央 SWD 孔位。
+- 2026-09-02：Issue #5 HC14/1nF 手动验证——PulseView/sigrok 三通道同步采集 A3144E OUT、HC14 1A、1Y（8 通道、20 kHz），确认静态电平、反相逻辑与单次干净边沿；手动脉宽不作为记录值；`1nF` 保留为起始滤波值；最高预期脉冲频率不丢脉冲仍待测。原始证据纳入 `data/raw/2026-09-02/`。
 - 2026-09-02：L1 单路 A3144E 霍尔链路实测（对应 Issue #4 验收项：静态电平、手动触发波形、2 颗磁铁约 7mm 暂测距离）。原始证据（sigrok `.sr`/`.pvs`、波形与距离 PNG）纳入版本控制于 `data/raw/2026-09-02/`（`.gitignore` 显式例外，PR #51），并在 Issue #4 登记元数据与复核方式。Issue #1/#2 仍开放，未标记完成。
 
 ### Changed
@@ -34,6 +35,7 @@
 - STM32 应用层技术栈确定为 C++17，模块扩展名改为 `.cpp/.hpp`。
 - 增加 C++17 主机语法检查，并明确 CubeMX HAL C 与应用层的 ABI 适配边界。
 - `docs/voltage-interface-table.md`：补充 A3144E→HC14 单路 L1 实测电平、触发行为与临时逻辑电源记录。
+- `docs/voltage-interface-table.md`：记录 Issue #5 三通道 HC14 整形复核条件与证据文件；明确 `1nF` 起始值保留、高频验收待测。
 - 更正接收机型号识别：FlySky FS-iA10B → FS-SR8（2026-09-01 依照片识读有误；用户 2026-09-02 确认接收机一直为 FS-SR8）。FS-SR8 的 2.4GHz ANT 协议与 PWM/PPM/i-BUS/s-BUS 输出能力按 FlySky 官方产品页/手册记录；实际输出模式保持 `TBD`，不能由型号推断。同步更新 README、hardware-overview、bill-of-materials、open-questions 与电压接口表。
 - 电池额定信息更新为 3S1P、11.1V、4000mAh、100C（用户 2026-09-02 确认容量）；表格不再把化学体系写成已确认的 LiPo，化学体系、满充/当前实测电压、连接器和线规保持 `TBD`。
 - 两只 Raptor5 G071-35A ESC 的固件标识确认为 `Flycolor_Raptor_5`（用户确认）；固件版本号、配置参数、3.3V 控制电平接受度与失联行为保持 `TBD`。
