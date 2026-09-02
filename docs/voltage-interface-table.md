@@ -11,11 +11,11 @@
 | PX4 -> STM32 PWM 输入 | Pixhawk 6C Mini，固件版本 v1.12.3（沿用 Issue #1 只读确认） | 标准 PWM；PWM 信号电压可硬件切换 3.3V/5V | STM32G431 定时器输入捕获 | 3.3V 容限 | `TBD` | 型号与固件已确认，实际输出电平待确认 | Holybro 官方文档、Issue #1 MAVLink 只读记录 |
 | STM32 -> HCT157 | STM32G431 PWM 输出 | 3.3V PWM | SN74HCT157N B1/B2 | 输入高电平阈值按数据手册 | `TBD` | 待测 | 数据手册/逻辑波形 |
 | HCT157 -> ESC | SN74HCT157N Y1/Y2 | 标准 PWM，暂定 1000–2000µs | Raptor 5 ESC，固件 `Flycolor_Raptor_5` | 支持常规 1–2ms PWM；3.3V 控制电平待实测 | `TBD` | 型号已确认，3.3V 接受度待实测 | Flycolor 说明书/实测 |
-| A3144E -> HC14 | A3144E OUT，开集电极 | VCC 5.06V；OUT 经 4.7kΩ 上拉至 3.3V，1kΩ 串联，1nF 起始滤波 | SN74HC14N 施密特输入 | 施密特输入，3.3V 逻辑 | 无磁体：OUT 3.26V、1A 3.26V、1Y 0V；2 颗磁铁约 7mm 触发，单次边沿干净 | L1 手动触发实测通过 | 2026-09-02 波形（本地 `data/raw/2026-09-02/`，未纳入版本控制）、万用表记录 |
-| HC14 -> STM32 霍尔捕获 | SN74HC14N 1Y | 3.3V 整形方波（反相） | STM32 定时器输入捕获，引脚 `TBD` | 定时器输入捕获能力 | 无磁体 0V，触发时 3.26V；输出与 A3144E OUT 反相 | 输出端已验证，STM32 捕获待引脚分配 | 2026-09-02 波形（本地 `data/raw/2026-09-02/`，未纳入版本控制） |
+| A3144E -> HC14 | A3144E OUT，开集电极 | VCC 5.06V；OUT 经 4.7kΩ 上拉至 3.3V，1kΩ 串联，1nF 起始滤波 | SN74HC14N 施密特输入 | 施密特输入，3.3V 逻辑 | 无磁体：OUT 3.26V、1A 3.26V、1Y 0V；2 颗磁铁约 7mm 触发，单次边沿干净 | L1 手动触发实测通过 | 2026-09-02 波形与原始采集（`data/raw/2026-09-02/`，含 `.sr`）、万用表记录 |
+| HC14 -> STM32 霍尔捕获 | SN74HC14N 1Y | 3.3V 整形方波（反相） | STM32 定时器输入捕获，引脚 `TBD` | 定时器输入捕获能力 | 无磁体 0V，触发时 3.26V；输出与 A3144E OUT 反相 | 输出端已验证，STM32 捕获待引脚分配 | 2026-09-02 波形与原始采集（`data/raw/2026-09-02/`，含 `.sr`） |
 | STM32 UART -> PC/PX4 | STM32G431 TX | 3.3V UART，波特率 `TBD` | USB-TTL RX / PX4 RX | RX 电平匹配 | `TBD` | 待测 | 串口记录 |
-| 接收机 -> PX4 遥控输入 | FLYSKY FS-SR8 | ANT 协议；数据输出支持 PWM/PPM/i.BUS/s.BUS | Pixhawk 6C Mini RC 输入 | 待确认使用哪种输出模式 | `TBD` | 型号已确认，输出模式待定 | FS-SR8 说明书 |
-| 电池 -> ESC 主电源 | 3S LiPo，4000mAh，标称 11.1V | 11.1V 标称电压 | Raptor 5 ESC | 支持 3–6S | `TBD` | 电池和 ESC 电压范围已确认，实际值待测 | 电池标签/Flycolor 说明书 |
+| 接收机 -> PX4 遥控输入 | FLYSKY FS-SR8（用户确认；2026-09-01 照片识读的 FS-iA10B 有误） | 2.4GHz ANT 协议；输出可选 PWM/PPM/i-BUS/s-BUS（厂家资料） | Pixhawk 6C Mini RC 输入 | 待确认实际输出模式；不能由型号推断 | `TBD` | 型号与协议能力已确认，实际输出模式待定 | FlySky 官方产品页/FS-SR8 手册（见参考来源） |
+| 电池 -> ESC 主电源 | 3S1P 电池（用户确认 4000mAh），标称 11.1V，化学体系 `TBD` | 标称 11.1V 电压 | Raptor 5 ESC | 支持 3–6S | `TBD` | 电池额定信息已确认（用户），实际电压/连接待测 | 用户确认记录（PR #51 评审/Issue #1）、Flycolor 说明书 |
 | 电池 -> 降压模块 -> 逻辑电源 | 电池，规格已记录 | 11.1V 标称电压 | 降压模块，型号 `TBD` | 输入额定范围 | `TBD` | `TBD` | 数据手册/万用表 |
 | 降压模块 -> 逻辑电路 | 降压模块输出，型号 `TBD` | 输出电压 `TBD`，额定电流 `TBD` | STM32/HC14/HCT157 供电 | 3.3V 逻辑电源，纹波 `TBD` | `TBD` | `TBD` | 数据手册/万用表 |
 | L1 逻辑电源（临时台面） | WeAct 板 3.3V / USB-TTL 5V | 3.26V / 5.06V | HC14/A3144E 供电 | 3.3V 逻辑、霍尔 5V | 3.26V / 5.06V | 实测通过，仅限 L1 临时电源，非最终降压方案 | 万用表记录 2026-09-02 |
@@ -31,19 +31,19 @@
 
 - Pixhawk 6C Mini 的 PWM 输出支持 3.3V 和 5V 两种硬件切换模式，需要检查实际板子焊接了哪个电压。
 - Raptor 5 ESC 支持常规 1–2ms 标准 PWM 输入，上电时自动检测输入协议。
-- Raptor 5 ESC 支持 3–6S 电池，与 3S 4000mAh 11.1V 电池匹配。
-- FLYSKY FS-SR8 使用 ANT 协议，数据输出支持 PWM、PPM、i.BUS 和 s.BUS，尚未确定 PX4 使用哪一种。
+- Raptor 5 ESC 支持 3–6S 电池（厂家手册）；3S1P、4000mAh、标称 11.1V 电池在额定范围内（电池化学体系未确认，不作为匹配依据）。
+- FLYSKY FS-SR8 使用 2.4GHz ANT 协议，输出可选 PWM、PPM、i-BUS 和 s-BUS（厂家资料：官方产品页与 FS-SR8 用户手册；2026-09-02 用户确认接收机一直为该型号，旧识读 FS-iA10B 已更正）。尚未确定 PX4 使用哪一种输出，不能由型号推断。
 - PX4 固件按 Issue #1 的 MAVLink 只读记录确认为 v1.12.3；接收机输出模式暂不处理，待后续复核。
 - L1 台面逻辑电源实测：WeAct 板 3.3V 输出 3.26V，USB-TTL 5V 输出 5.06V，两者与 HC14 共地。
 - A3144E 无磁体时 OUT 被 4.7kΩ 上拉至 3.26V，HC14 1Y 为 0V；磁体靠近时 OUT 拉低、1Y 升为高电平；手动靠近和离开均只产生一次干净边沿，无漏脉冲、重复触发或毛刺。
 - 触发距离暂测约 7mm（2 颗磁铁），随磁铁数量和安装位置变化，最终值待安装方案固定后复核。
-- 原始波形已复制到 `data/raw/2026-09-02/`；该目录不纳入版本控制，PR 不提交原始采集文件。
+- 原始采集与导出文件（sigrok `.sr`/`.pvs`、波形 PNG、距离 PNG）纳入版本控制于 `data/raw/2026-09-02/`（`.gitignore` 显式例外，PR #51），供成员直接复核；复核方式与元数据登记于 Issue #4。
 
 ## 本次测试边界
 
 - 本节 L1 实测为真实硬件测量证据，非 synthetic/demo 数据；synthetic 数据不得作为本表确认依据。
 - 仅验证单路 A3144E→HC14 在临时逻辑电源下的静态电平和手动磁触发，不证明双路 RPM、PPR 标定、最终安装距离、HCT157、闭环或电机运行。
-- 原始波形位于 `data/raw/2026-09-02/`，该目录不纳入版本控制，PR 不提交原始采集文件。
+- 原始波形与采集文件位于 `data/raw/2026-09-02/`（已纳入版本控制）；采样条件：sigrok 会话 `2026-09-02_single_hall_manual_magnet.sr`，8 通道、20kHz，探针通道对应关系见导出 PNG 与 L1 接线记录。
 
 ## 仍需补充确认的信息
 
@@ -62,4 +62,5 @@
 
 - Holybro Pixhawk 6C Mini PWM 信号电压说明：`https://docs.holybro.com/autopilot/pixhawk-6c-mini/pwm-signal-voltage-mod.md`
 - Flycolor Raptor 5 说明书及第三方规格页
-- FlySky FS-SR8 规格页
+- FlySky FS-SR8 官方产品页：`https://www.flyskytech.com/parts_detail/113.html`
+- FlySky FS-SR8 官方用户手册（PDF）：`https://flyskytech.com/u_file/photo/20250326/FS-SR8%20User%20manual%2020240619.pdf`

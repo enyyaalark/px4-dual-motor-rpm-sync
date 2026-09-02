@@ -18,7 +18,7 @@ python3 tools/plot_rpm_log.py data/demo/synthetic_rpm_log.csv --output data/proc
 
 `data/demo/synthetic_rpm_log.csv` 是人工构造的格式演示数据，不代表真实硬件、控制效果或验收结果。
 
-真实实验日志应写入 `data/raw/`，并在同名记录中注明硬件、固件提交、条件和结论。仓库默认忽略这些本地原始数据，避免误提交设备信息或大文件。
+真实实验日志应写入 `data/raw/`，并在同名记录中注明硬件、固件提交、条件和结论。仓库默认忽略这些本地原始数据，避免误提交设备信息或大文件；例外：2026-09-02 的 L1 霍尔实测原始证据（sigrok `.sr`/`.pvs` 与 PNG，共约 574KB，无设备信息）按 `.gitignore` 显式例外纳入版本控制，便于团队成员直接复核。
 
 STM32 点灯/UART 任务开始前可检查本机工具链：
 

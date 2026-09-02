@@ -6,9 +6,9 @@
 |---|---|---|---|---|
 | Q01 | 飞控外壳已确认 `Pixhawk 6C Mini`；制造商和 Model A/B/legacy 硬件修订仍待确认 | 修订决定 PWM 电压选择位置和部分硬件能力 | role:hardware | PWM 电平确认与最终接线 |
 | Q02 | PX4 固件已通过 MAVLink 确认为 v1.12.3；当前 `SYS_AUTOSTART=1001`（HIL Quadcopter X）与项目目标不一致，待单独评审/更正 | 参数名、输出协议和行为需要绑定该版本；机架错误时禁止动力连接 | role:firmware | PX4 安全配置复现 |
-| Q03 | 接收机已确认 FlySky `FS-iA10B`，厂家协议为 AFHDS 2A；当前使用的 PWM/PPM/i.bus/s.bus 输出模式仍待确认 | 决定 PX4 输入配置 | role:hardware | 遥控全链路 |
-| Q04 | 两只 ESC 已确认为相同的 Flycolor `Raptor5 G071-35A`；实刷固件版本、配置、3.3V 接受度和失联行为仍待确认 | 决定 PWM 范围、刷新率和安全行为 | role:hardware | PWM 输出/安全 |
-| Q05 | 电池已确认为 3S1P，用户提供额定 11.1V、100C；容量、化学体系、满充/当前实测电压、连接器和线规仍待确认 | 容量与 C 倍率共同决定理论电流；实测电压和连接决定动力风险与降压设计 | role:hardware | 带电机测试 |
+| Q03 | 接收机已确认 FlySky `FS-SR8`（用户 2026-09-02 确认；旧照片识读 FS-iA10B 有误），厂家资料为 2.4GHz ANT 协议、输出可选 PWM/PPM/i-BUS/s-BUS；当前实际输出模式仍待确认（不能由型号推断） | 决定 PX4 输入配置 | role:hardware | 遥控全链路 |
+| Q04 | 两只 ESC 已确认为相同的 Flycolor `Raptor5 G071-35A`，固件标识均为 `Flycolor_Raptor_5`（用户确认）；固件版本号、配置、3.3V 接受度和失联行为仍待确认 | 决定 PWM 范围、刷新率和安全行为 | role:hardware | PWM 输出/安全 |
+| Q05 | 电池已确认为 3S1P，用户确认额定 11.1V、4000mAh、100C；化学体系、满充/当前实测电压、连接器和线规仍待确认 | 容量与 C 倍率共同决定理论电流；实测电压和连接决定动力风险与降压设计 | role:hardware | 带电机测试 |
 | Q06 | 螺旋桨尺寸与旋向 | 决定负载和机械安全 | role:hardware | 带桨测试 |
 | Q07 | 最终 STM32 定时器/GPIO 分配 | 决定 CubeMX 工程与布线 | role:firmware | `.ioc` 和固件集成 |
 | Q08 | 独立激光转速计型号/可用性 | PPR 和 3% 误差目标需要参考 | 两人共同 | M1 标定 |
@@ -31,8 +31,15 @@
 ## 2026-09-01 部分确认记录
 
 - Q01：用户确认现有临时照片展示飞控底面，可读到 `pixhawk 6c mini` 和 MAIN/AUX/RC IN 端口编号；但该底面没有可读的制造商、Model A/B/legacy 修订或 PWM 电压焊盘状态。Holybro 同型号资料显示 PWM 输出可能随硬件修订/焊盘配置为 3.3V 或 5V，因此在获得其他修订证据并实测前，不关闭电平相关问题。
-- Q03：临时照片可读到 FlySky `FS-iA10B`；厂家规格列出 AFHDS 2A、10 路 PWM，以及 PWM/PPM/i.bus/s.bus 数据接口。照片不证明当前接收机配置。
+- Q03：临时照片可读到 FlySky `FS-iA10B`；厂家规格列出 AFHDS 2A、10 路 PWM，以及 PWM/PPM/i.bus/s.bus 数据接口。照片不证明当前接收机配置。（2026-09-02 更正为 FS-SR8，见下方记录。）
 - Q04：临时照片可读到 Flycolor Raptor 5、35A、3–6S；厂家产品页对应 `Raptor5 G071-35A`，厂家手册列出 35A 持续、40A/10秒、无 BEC、3–6S，并支持普通 1–2ms PWM。用户后续确认第二只 ESC 同型号；两只实际固件、配置和输入电平阈值仍需实物/测量证据。
 - 临时照片文件名和厂家链接记录在 `docs/hardware-overview.md`；`Pictures/` 不进入版本控制。
 - Q02：仅 USB 供电条件下通过 MAVLink 读取 PX4 v1.12.3；同时发现 `SYS_AUTOSTART=1001`、`SYS_HITL=0`、MAIN 1–4/400Hz/1075–1950us。用户已确认台架逻辑映射为 `MAIN1 -> 左侧后推`、`MAIN2 -> 右侧后推`，两路使用相同基础指令；但 PX4 v1.12 文档将 1001 定义为 HIL Quadcopter X，因此通道映射不解除动力测试阻塞。完整只读记录见 `docs/hardware-overview.md`。
-- Q04/Q05/布局：用户确认验证结构为双发后推布局，两只 ESC 同型号，并提供电池 3S1P、11.1V、100C 信息。未提供容量，故不能计算 100C 对应的理论电流；动力测试继续等待电池标签/实测与电气复核。
+- Q04/Q05/布局：用户确认验证结构为双发后推布局，两只 ESC 同型号，并提供电池 3S1P、11.1V、100C 信息。未提供容量，故不能计算 100C 对应的理论电流；动力测试继续等待电池标签/实测与电气复核。（2026-09-02 用户补充确认容量 4000mAh，见下方记录。）
+
+## 2026-09-02 确认/更正记录
+
+- Q03（更正）：用户确认接收机一直为 FlySky `FS-SR8`，2026-09-01 依照片识读的 `FS-iA10B` 是错误识别。厂家官方资料（产品页与 FS-SR8 用户手册）：2.4GHz ANT 协议、8 通道 PWM、双天线、供电 3.5–9V、输出可选 PWM/PPM/i-BUS/s-BUS。遥控器（发射机）型号、接收机当前输出模式与输出电平仍待确认，不能由型号推断。复核：成员 B（PR #51 评审）。
+- Q04：用户确认两只 Raptor5 G071-35A ESC 的固件标识均为 `Flycolor_Raptor_5`；固件版本号、配置参数、3.3V 控制电平接受度和失联行为仍需实物/测量证据。复核：成员 B（PR #51 评审）。
+- Q05：用户补充确认电池容量 4000mAh，额定信息完整为 3S1P、11.1V、4000mAh、100C；化学体系、满充/当前实测电压、连接器和线规保持 `TBD`，等待电池标签照片与实测。复核：成员 B（PR #51 评审）。
+- 上述确认记录于 PR #51 评审意见及 Issue #1/#2 评论；基线同步更新至 README、`docs/hardware-overview.md`、`docs/bill-of-materials.md`、`docs/open-questions.md`、`docs/voltage-interface-table.md` 与 CHANGELOG。

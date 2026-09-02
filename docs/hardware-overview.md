@@ -6,10 +6,10 @@
 |---|---|---:|---|
 | 控制 | STM32G431CBU6 WeAct 核心板 | 2 | 一块主用，一块备用/并行验证 |
 | 飞控 | Pixhawk 6C Mini | 1，照片与 USB/MAVLink 确认 | PX4 v1.12.3；制造商/硬件修订仍为 `TBD`；当前 HIL 四旋翼机架配置不适用于本项目 |
-| 遥控 | FlySky FS-iA10B 接收机 | 1，照片确认 | 厂家规格为 AFHDS 2A，支持 PWM/PPM/i.bus/s.bus；实际绑定和输出模式 `TBD` |
+| 遥控 | FlySky FS-SR8 接收机 | 1，用户确认（旧照片识读 FS-iA10B 已更正） | 厂家资料为 2.4GHz ANT 协议（适配 FS-ST8/FS-ST16 等 ANT 遥控），8 通道、双天线、供电 3.5–9V，输出可选 PWM/PPM/i-BUS/s-BUS；实际绑定状态与输出模式 `TBD`（不能由型号推断） |
 | 动力 | RS2205 2300KV 电机 | 2 | 不在面包板上承载主电流 |
-| 动力 | Flycolor Raptor5 G071-35A 电调 | 2，用户确认同型号 | 厂家规格 3–6S、35A 持续/40A 10 秒、无 BEC；实刷固件版本、配置和 3.3V 输入兼容性待确认 |
-| 供电 | 3S1P 电池 | 1，用户提供额定 11.1V、100C | 容量、化学体系、满充电压、当前实测电压、连接器和线规待确认；100C 不能脱离容量换算电流 |
+| 动力 | Flycolor Raptor5 G071-35A 电调 | 2，用户确认同型号，固件标识均为 `Flycolor_Raptor_5` | 厂家规格 3–6S、35A 持续/40A 10 秒、无 BEC；固件版本号、配置和 3.3V 输入兼容性待确认 |
+| 供电 | 3S1P 电池 | 1，用户确认 3S1P/11.1V/4000mAh/100C | 化学体系、满充电压、当前实测电压、连接器和线规待确认；容量×C 换算的理论电流仍待标签/实测复核 |
 | 传感 | A3144E 数字霍尔开关 | 5 | 2 使用、3 备用 |
 | 整形 | SN74HC14N | 1+ | 3.3V 供电能力需按实物数据手册确认 |
 | 选择 | SN74HCT157N | 1+ | 供电、电平阈值和默认选择需台架验证 |
@@ -43,10 +43,13 @@
 | `8331a393389e3762310df1afeb5515b0.png` | FlySky `FS-iA10B`，外壳标出 SERVO、SENS、B/VCC、BIND 和 PPM/i-BUS 相关端口 | 当前绑定状态、实际选择的 PWM/PPM/i.bus/s.bus 输出模式和输出电平 |
 | `d761b629ed0799d37f86dbc523ed2c4a.png` | 一只 Flycolor Raptor 5、35A、3–6S 单体电调；用户后续确认第二只同型号 | 照片本身不能证明第二只一致；两只实刷固件版本、配置参数、输入阈值和失联行为仍待确认 |
 
+> 更正（2026-09-02）：用户确认接收机一直为 FlySky FS-SR8；上表 2026-09-01 依照片识读的 `FS-iA10B` 是错误识别，不作为当前硬件基线。FS-SR8 官方资料见下方厂家链接；实际输出模式不能由型号推断。
+
 照片位于 `.gitignore` 忽略的临时 `Pictures/` 收件箱，不作为可长期访问的仓库证据。型号规格另由厂家资料交叉核对：
 
 - Pixhawk 6C Mini 文档：<https://docs.holybro.com/autopilot/pixhawk-6c-mini>
-- FlySky FS-iA10B 规格：<https://www.flysky-cn.com/ia10b-canshu>
+- FlySky FS-SR8 官方产品页：<https://www.flyskytech.com/parts_detail/113.html>
+- FlySky FS-SR8 官方用户手册（PDF）：<https://flyskytech.com/u_file/photo/20250326/FS-SR8%20User%20manual%2020240619.pdf>
 - Flycolor Raptor5 G071 产品页：<https://www.fly-color.net/index.php?c=category&id=234>
 - Flycolor Raptor 5 厂家手册：<https://en.fly-color.net/uploadfile/202209/88d64251ad.pdf>
 
@@ -60,7 +63,7 @@
 | 固件 | PX4 `1.12.3` | 通过 MAVLink `AUTOPILOT_VERSION` 确认；未记录设备 UID |
 | 机架 | `SYS_AUTOSTART=1001`，`MAV_TYPE=2` | PX4 v1.12 文档将 1001 定义为 HIL Quadcopter X，与本项目双发固定翼目标不一致 |
 | 仿真开关 | `SYS_HITL=0` | HITL/SIH 未启用；不能消除上述错误机架配置风险 |
-| RC 输入 | `COM_RC_IN_MODE=0` | 配置为实体 RC 发射机输入；不能证明 FS-iA10B 当前使用哪种输出模式 |
+| RC 输入 | `COM_RC_IN_MODE=0` | 配置为实体 RC 发射机输入；不能证明 FS-SR8 当前使用哪种输出模式 |
 | IO | `SYS_USE_IO=1` | 使用 IO 板输出路径 |
 | MAIN PWM | `PWM_MAIN_RATE=400`、`PWM_MAIN_OUT=1234` | 参数表示 MAIN 1–4 为 ESC 输出、400Hz；尚未用逻辑分析仪验证实际波形 |
 | MAIN 范围 | 全局 min 1075us、max 1950us、disarmed 900us | MAIN1/2 独立 min/max 均为 -1，即继承全局值；这些值尚未与 Raptor5 实机校准 |
