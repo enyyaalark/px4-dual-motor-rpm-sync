@@ -106,6 +106,40 @@ bool testMonitorOnlyPassesBaseThrough() {
                   "monitor-only must still report the RPM error");
 }
 
+bool testMissingBaseInputKeepsRawBypassSelected() {
+    SystemController controller{};
+    controller.config = kConfig;
+    rpm_sync::reset(controller);
+    rpm_sync::setSelfTestComplete(controller, true);
+    rpm_sync::setManualBypass(controller, false);
+
+    const SystemStepResult result = rpm_sync::step(controller, 0U, 0.1F);
+    return expect(result.state == AppState::kMonitorOnly,
+                  "a waiting base input must remain in MONITOR_ONLY") &&
+           expect(!result.select_corrected,
+                  "a waiting base input must keep raw PX4 bypass selected") &&
+           expect(!result.pwm_output_valid,
+                  "a waiting base input must not produce valid outputs") &&
+           expect(result.pwm1_us == 0U && result.pwm2_us == 0U,
+                  "a waiting base input must leave corrected outputs at zero");
+}
+
+bool testInvalidOutputConfigKeepsRawBypassSelected() {
+    SystemController controller = configuredController();
+    controller.config.pwm_output_config = PwmOutputConfig{};
+    rpm_sync::setSyncEnabled(controller, false);
+
+    const SystemStepResult result = rpm_sync::step(controller, 5U, 0.1F);
+    return expect(result.state == AppState::kMonitorOnly,
+                  "invalid output bounds must remain in MONITOR_ONLY") &&
+           expect(!result.select_corrected,
+                  "invalid output bounds must keep raw PX4 bypass selected") &&
+           expect(!result.pwm_output_valid,
+                  "invalid output bounds must reject corrected outputs") &&
+           expect(result.pwm1_us == 0U && result.pwm2_us == 0U,
+                  "invalid output bounds must leave corrected outputs at zero");
+}
+
 bool testSyncControlAppliesBoundedCorrection() {
     SystemController controller = configuredController();
     const SystemStepResult result = rpm_sync::step(controller, 5U, 0.1F);
@@ -199,6 +233,8 @@ int main() {
     bool passed = true;
     passed = testDefaultConstructionIsInitAndSafe() && passed;
     passed = testMonitorOnlyPassesBaseThrough() && passed;
+    passed = testMissingBaseInputKeepsRawBypassSelected() && passed;
+    passed = testInvalidOutputConfigKeepsRawBypassSelected() && passed;
     passed = testSyncControlAppliesBoundedCorrection() && passed;
     passed = testManualBypassOverridesReadyConditions() && passed;
     passed = testHallTimeoutForcesFaultAndRecovers() && passed;

@@ -136,7 +136,6 @@ SystemStepResult step(SystemController& controller,
         base_valid ? pwm_input.pulse_width_us : 0U;
 
     SystemStepResult result{};
-    result.select_corrected = corrected_allowed;
     result.telemetry.timestamp_ms = now_ms;
     result.telemetry.base_pwm_us = base_pwm_us;
     result.telemetry.rpm1 = rpm1.rpm;
@@ -158,6 +157,12 @@ SystemStepResult step(SystemController& controller,
         result.pwm1_us = 0U;
         result.pwm2_us = 0U;
     }
+
+    // Never select the STM32 path unless it contains a complete, valid pair of
+    // outputs.  The bypass/fault gate alone is insufficient while the input is
+    // still waiting or the hardware output bounds remain uncalibrated.
+    result.select_corrected = corrected_allowed && base_valid &&
+                              result.pwm_output_valid;
 
     AppState next_state = AppState::kInit;
     if (!controller.bypass.self_test_complete) {

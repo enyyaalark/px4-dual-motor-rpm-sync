@@ -73,7 +73,7 @@ INIT --自检通过--> MONITOR_ONLY --人工使能且条件满足--> SYNC_CONTRO
 5. 以 `base_pwm - correction` 和 `base_pwm + correction` 通过 `pwm_output` 限幅，基础 PWM 无效时两路输出为 0；
 6. 生成遥测样本并更新 `INIT/MONITOR_ONLY/SYNC_CONTROL/BYPASS/FAULT` 状态。
 
-旁路选择信号等于第 3 步的门控结果，与是否进入 `SYNC_CONTROL` 无关；`MONITOR_ONLY` 中修正量为 0，因此选择“修正 PWM”等同于透传基础指令。
+旁路选择信号还要求基础 PWM 有效且双路输出校验成功，与是否进入 `SYNC_CONTROL` 无关；`MONITOR_ONLY` 中修正量为 0，因此在完整有效的输出对可用时，选择“修正 PWM”等同于透传基础指令。基础输入仍在等待或输出范围尚未标定时继续选择 PX4 原始旁路，不能选择值为零或无效的 STM32 输出路径。
 
 当前版本只完成主机侧逻辑验证。故障锁存策略、`kOutputSaturated` 与旁路门控的关系、`FAULT -> BYPASS` 的具体迁移，以及低速 `error_percent` 哨兵仍保持 `TBD`，需要在对应 Issue 中评审；未接入 HAL、定时器、DMA 或 UART 发送层，不能据此声称实机状态机已工作。
 
