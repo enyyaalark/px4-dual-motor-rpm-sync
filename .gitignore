@@ -23,6 +23,10 @@ __pycache__/
 # Generated plots and local logs
 data/raw/*
 !data/raw/.gitkeep
+# 例外：2026-09-02 L1 霍尔实测原始证据（sigrok .sr/.pvs、波形与距离 PNG，共约 574KB；
+# 无设备序列号等敏感信息）。作为不可改写、团队可复核的证据纳入版本控制，对应 PR #51。
+!data/raw/2026-09-02/
+!data/raw/2026-09-02/*
 data/processed/*
 !data/processed/.gitkeep
 
