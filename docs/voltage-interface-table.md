@@ -8,7 +8,7 @@
 
 | 接口 | 发送端 | 发送端电平/协议 | 接收端 | 接收端要求 | 实测值 | 状态 | 证据 |
 |---|---|---|---|---|---|---|---|
-| PX4 -> STM32 PWM 输入 | Pixhawk 6C Mini，固件版本 `TBD` | 标准 PWM；PWM 信号电压可硬件切换 3.3V/5V | STM32G431 定时器输入捕获 | 3.3V 容限 | `TBD` | 型号已确认，实际输出电平待确认 | Holybro 官方文档 |
+| PX4 -> STM32 PWM 输入 | Pixhawk 6C Mini，固件版本 v1.12.3（沿用 Issue #1 只读确认） | 标准 PWM；PWM 信号电压可硬件切换 3.3V/5V | STM32G431 定时器输入捕获 | 3.3V 容限 | `TBD` | 型号与固件已确认，实际输出电平待确认 | Holybro 官方文档、Issue #1 MAVLink 只读记录 |
 | STM32 -> HCT157 | STM32G431 PWM 输出 | 3.3V PWM | SN74HCT157N B1/B2 | 输入高电平阈值按数据手册 | `TBD` | 待测 | 数据手册/逻辑波形 |
 | HCT157 -> ESC | SN74HCT157N Y1/Y2 | 标准 PWM，暂定 1000–2000µs | Raptor 5 ESC，固件 `Flycolor_Raptor_5` | 支持常规 1–2ms PWM；3.3V 控制电平待实测 | `TBD` | 型号已确认，3.3V 接受度待实测 | Flycolor 说明书/实测 |
 | A3144E -> HC14 | A3144E OUT，开集电极 | VCC 5.06V；OUT 经 4.7kΩ 上拉至 3.3V，1kΩ 串联，1nF 起始滤波 | SN74HC14N 施密特输入 | 施密特输入，3.3V 逻辑 | 无磁体：OUT 3.26V、1A 3.26V、1Y 0V；2 颗磁铁约 7mm 触发，单次边沿干净 | L1 手动触发实测通过 | 2026-09-02 波形（桌面 `0902data`）、万用表记录 |
@@ -33,6 +33,7 @@
 - Raptor 5 ESC 支持常规 1–2ms 标准 PWM 输入，上电时自动检测输入协议。
 - Raptor 5 ESC 支持 3–6S 电池，与 3S 4000mAh 11.1V 电池匹配。
 - FLYSKY FS-SR8 使用 ANT 协议，数据输出支持 PWM、PPM、i.BUS 和 s.BUS，尚未确定 PX4 使用哪一种。
+- PX4 固件按 Issue #1 的 MAVLink 只读记录确认为 v1.12.3；接收机输出模式暂不处理，待后续复核。
 - L1 台面逻辑电源实测：WeAct 板 3.3V 输出 3.26V，USB-TTL 5V 输出 5.06V，两者与 HC14 共地。
 - A3144E 无磁体时 OUT 被 4.7kΩ 上拉至 3.26V，HC14 1Y 为 0V；磁体靠近时 OUT 拉低、1Y 升为高电平；手动靠近和离开均只产生一次干净边沿，无漏脉冲、重复触发或毛刺。
 - 触发距离暂测约 7mm（2 颗磁铁），随磁铁数量和安装位置变化，最终值待安装方案固定后复核。
@@ -40,7 +41,6 @@
 
 ## 仍需补充确认的信息
 
-- Pixhawk 6C Mini 固件版本
 - Pixhawk 6C Mini 实际 PWM 输出电平是 3.3V 还是 5V
 - Raptor 5 ESC 对 3.3V 控制电平的实际接受度
 - FS-SR8 最终使用 PWM、PPM、i.BUS 还是 s.BUS 输出
