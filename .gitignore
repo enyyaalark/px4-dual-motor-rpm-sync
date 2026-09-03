@@ -27,6 +27,9 @@ data/raw/*
 # 无设备序列号等敏感信息）。作为不可改写、团队可复核的证据纳入版本控制，对应 PR #51。
 !data/raw/2026-09-02/
 !data/raw/2026-09-02/*
+# 例外：2026-09-03 Issue #6 双路 L1 串扰原始证据（sigrok .sr/.pvs、波形 PNG）。
+!data/raw/2026-09-03/
+!data/raw/2026-09-03/*
 data/processed/*
 !data/processed/.gitkeep
 
