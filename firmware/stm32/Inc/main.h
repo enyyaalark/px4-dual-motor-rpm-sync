@@ -57,6 +57,10 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define HALL1_CAPTURE_Pin GPIO_PIN_0
+#define HALL1_CAPTURE_GPIO_Port GPIOA
+#define HALL2_CAPTURE_Pin GPIO_PIN_1
+#define HALL2_CAPTURE_GPIO_Port GPIOA
 #define STATUS_LED_Pin GPIO_PIN_6
 #define STATUS_LED_GPIO_Port GPIOC
 #define TELEMETRY_TX_Pin GPIO_PIN_9

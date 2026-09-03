@@ -18,11 +18,14 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
+#include "hall_capture.h"
 
 /* USER CODE END Includes */
 
@@ -96,6 +99,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_TIM2_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
@@ -105,6 +109,11 @@ int main(void)
                          (uint8_t *)telemetry_heartbeat,
                          sizeof(telemetry_heartbeat) - 1U,
                          TELEMETRY_TIMEOUT_MS);
+
+  if (HallCapture_Start(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
   /* USER CODE END 2 */
 
@@ -176,6 +185,11 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
+{
+  HallCapture_OnInterrupt(htim);
+}
 
 /* USER CODE END 4 */
 

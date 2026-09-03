@@ -6,6 +6,7 @@
 
 ### Added
 
+- Issue #6 双路 Hall 捕获候选 CubeMX 配置：PA0/TIM2_CH1 与 PA1/TIM2_CH2 共用 1 MHz、32 位时间基准；加入有界 ISR 快照、双通道启动和配置回归测试。CubeMX 生成已验证，实机波形、滤波参数和 PPR 仍待验证。
 - 项目架构、硬件、接线、控制、UART、安全、校准、测试、计划、BOM、风险和开放问题文档。
 - STM32G431 模块接口骨架与集中配置模板。
 - synthetic/demo CSV、RPM 日志校验/绘图工具和基础测试。
