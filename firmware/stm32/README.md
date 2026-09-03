@@ -6,6 +6,8 @@
 
 `rpm_sync_capture.ioc` 在该基线上加入 Issue #6 候选捕获：`PA0/TIM2_CH1` 和 `PA1/TIM2_CH2` 共用 1 MHz、32 位自由运行计数器，双路均为上升沿直接输入、中断捕获。数字滤波暂为 `0`，必须根据 HC14 实际波形和最高预期频率再确定。`hall_capture.c` 的中断路径只记录捕获 tick、周期和毫秒时间戳；主循环每秒通过 PA9 输出一次 `rpm_sync_capture,v1` 遥测，包含两路有效标志、周期（µs）和最后脉冲年龄（ms）。RPM 换算仍由周期任务完成，且 PPR 保持 `TBD`。
 
+接线完成后，可用 `tools/check_hall_capture_uart.py` 做有界采集。工具严格检查字段、版本、无符号 32 位范围和有效标志，并以独占创建方式保存原始文本，避免覆盖已有证据。例如：`python3 tools/check_hall_capture_uart.py --port <本机串口> --duration-s 15 --required-samples 5 --require-both-valid --output data/raw/<日期>/<新文件名>.txt`。串口设备名只在本地命令中填写，不提交到仓库。
+
 ## 计划结构
 
 ```text
