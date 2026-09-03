@@ -26,6 +26,7 @@
 /* USER CODE BEGIN Includes */
 
 #include "hall_capture.h"
+#include <stdio.h>
 
 /* USER CODE END Includes */
 
@@ -54,6 +55,8 @@
 
 static uint32_t last_led_tick_ms;
 static uint32_t last_telemetry_tick_ms;
+static HallCaptureSnapshot hall_snapshots[2];
+static uint8_t capture_telemetry[160];
 static const uint8_t telemetry_heartbeat[] =
   "rpm_sync_bringup,v1,board=weact_g431_qfn48,mode=MONITOR_ONLY\r\n";
 
@@ -135,10 +138,28 @@ int main(void)
     if ((now_ms - last_telemetry_tick_ms) >= TELEMETRY_PERIOD_MS)
     {
       last_telemetry_tick_ms = now_ms;
-      (void)HAL_UART_Transmit(&huart1,
-                             (uint8_t *)telemetry_heartbeat,
-                             sizeof(telemetry_heartbeat) - 1U,
-                             TELEMETRY_TIMEOUT_MS);
+      HallCapture_Read(hall_snapshots);
+      const int telemetry_length = snprintf(
+        (char *)capture_telemetry,
+        sizeof(capture_telemetry),
+        "rpm_sync_capture,v1,t_ms=%lu,ch1_valid=%u,ch1_period_us=%lu,"
+        "ch1_age_ms=%lu,ch2_valid=%u,ch2_period_us=%lu,ch2_age_ms=%lu\r\n",
+        (unsigned long)now_ms,
+        (unsigned int)hall_snapshots[0].has_period,
+        (unsigned long)hall_snapshots[0].period_ticks,
+        (unsigned long)(now_ms - hall_snapshots[0].last_pulse_ms),
+        (unsigned int)hall_snapshots[1].has_period,
+        (unsigned long)hall_snapshots[1].period_ticks,
+        (unsigned long)(now_ms - hall_snapshots[1].last_pulse_ms));
+
+      if ((telemetry_length > 0) &&
+          ((size_t)telemetry_length < sizeof(capture_telemetry)))
+      {
+        (void)HAL_UART_Transmit(&huart1,
+                               capture_telemetry,
+                               (uint16_t)telemetry_length,
+                               TELEMETRY_TIMEOUT_MS);
+      }
     }
   }
   /* USER CODE END 3 */
