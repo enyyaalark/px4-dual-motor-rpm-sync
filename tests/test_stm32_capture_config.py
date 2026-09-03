@@ -47,6 +47,16 @@ class Stm32CaptureConfigTests(unittest.TestCase):
         self.assertNotIn("HAL_UART_Transmit", source)
         self.assertNotIn("while (", source)
 
+    def test_capture_telemetry_is_emitted_outside_interrupt_path(self):
+        main_source = (STM32 / "Src" / "main.c").read_text()
+        interrupt_source = (STM32 / "Src" / "hall_capture.c").read_text()
+
+        self.assertIn("rpm_sync_capture,v1", main_source)
+        self.assertIn("ch1_valid=%u", main_source)
+        self.assertIn("ch2_valid=%u", main_source)
+        self.assertIn("HallCapture_Read(hall_snapshots)", main_source)
+        self.assertNotIn("HAL_UART_Transmit", interrupt_source)
+
 
 if __name__ == "__main__":
     unittest.main()
