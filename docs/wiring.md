@@ -52,13 +52,15 @@ Linux 主机需要为 `0483:df11` 安装 udev 规则后才能下载。默认该�
 
 下载后必须冷启动或按 `RESET` 再判断点灯结果，不能以 `STM32_Programmer_CLI -g` 的跳转启动为准。ROM DFU bootloader 为运行 USB 已启用 HSI48 与 PLL，而 `SystemClock_Config` 按复位后状态配置时钟（`PLL.PLLState = RCC_PLL_NONE`），跳转后时钟配置可能失败并停在 `Error_Handler()` 的 `__disable_irq()` 死循环，现象是状态灯保持熄灭。该现象 2026-09-01 已实测复现，冷启动后点灯恢复正常。
 
-需要 SWD 调试或 USB DFU 不可用时，由核心板 USB-C 提供逻辑电源，ST-LINK 只连接三根调试信号。下面的 `CLK`、`DIO` 和 `GND` 均在核心板 100mil 排针孔位上；用户已于 2026-09-03 确认排针焊接完成，但三线连接与 SWD 通信仍须按 Issue #48 单独复核。
+需要 SWD 调试或 USB DFU 不可用时，由核心板 USB-C 提供逻辑电源，ST-LINK 只连接三根调试信号。下面的 `CLK`、`DIO` 和 `GND` 均在核心板 100mil 排针孔位上；排针焊接和三线 SWD 链路已按 Issue #48 完成验证，但每次重新接线仍须复核供电隔离和信号对应关系。
 
 ```text
 ST-LINK SWCLK ---- 核心板 CLK（PA14）
 ST-LINK SWDIO ---- 核心板 DIO（PA13）
 ST-LINK GND   ---- 核心板 GND
 ```
+
+Issue #48 已于 2026-09-04 完成上述三线链路验证：STM32CubeProgrammer 连续两次只读识别结果一致，目标电压 3.27 V、Device ID `0x468`、设备族 STM32G43x/G44x、NVM 128 KBytes；断电拆除三线并仅恢复核心板 USB-C 后，原 PC6 点灯固件正常运行。该结果只证明本次连接下的 SWD 调试路径，不授权连接 ST-LINK 供电脚，也不证明其他 GPIO 或控制链已经验证。
 
 按 ST-LINK 外壳丝印识别信号，不凭连接器朝向猜测针脚。验证时不连接 ST-LINK 的 3.3V、5V、RST、SWIM，也不连接 CH340；这样核心板只有 USB-C 一条供电路径。上电前先断开电机、电调和电池，检查 3.3V 对 GND 无明显短路，并由另一人复核三根线。下载完成并断电后，才进入上面的单向 UART 接线步骤。
 
