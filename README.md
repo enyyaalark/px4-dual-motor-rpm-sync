@@ -4,7 +4,7 @@
 
 本项目面向双发后推固定翼的台架验证结构：PX4 负责遥控输入、姿态与上层飞行控制；STM32G431 独立测量两台无刷电机的实际转速，在两个基础指令相同的前提下实施有限幅的同步修正，并通过 UART 输出可复核数据。
 
-**当前状态：规划、代码骨架和 STM32 最小 bring-up 已完成。最终引脚、电气接口、霍尔/PWM/RPM 实机验证、电机测试和飞行验证仍未完成，不具备安全飞行条件。**
+**当前状态：规划、代码骨架、STM32 最小 bring-up，以及 PA0/PA1 + TIM2 的双路 Hall 捕获软件基线已完成；成员 A 已交接两颗 HC14 到 PA0/PA1 的 L1 接线。双路捕获波形、PPR/RPM、PWM、旁路和电机实机验证仍未完成，不具备安全飞行条件。**
 
 ## 项目目标
 
@@ -51,17 +51,17 @@ A3144E -> 4.7kΩ 上拉至 3.3V -> 1kΩ 串联 -> 1nF 起始滤波
 ## 软件组成
 
 ```text
-firmware/stm32/App/   STM32 HAL/C++17 模块接口骨架（无猜测引脚、无 .ioc）
+firmware/stm32/       CubeMX/HAL 工程、双路 Hall 捕获与 C++17 应用层
 tools/                CSV 校验和绘图工具
 tests/                主机侧基础测试
 docs/                 架构、接线、算法、安全、校准、计划与风险文档
 ```
 
-STM32 应用层使用 C++17，状态机至少包括 `INIT`、`MONITOR_ONLY`、`SYNC_CONTROL`、`BYPASS`、`FAULT`。参数集中在 `app_config.hpp`，最终定时器和 GPIO 保持 `TBD`。CubeMX 生成的 HAL C 代码通过薄的 C++ 适配层接入；HAL 回调需要时使用 `extern "C"` 保持 ABI 兼容。
+STM32 应用层使用 C++17，状态机至少包括 `INIT`、`MONITOR_ONLY`、`SYNC_CONTROL`、`BYPASS`、`FAULT`。参数集中在 `app_config.hpp`。Issue #6 已生成 `PA0/TIM2_CH1`、`PA1/TIM2_CH2` 双路 Hall 捕获配置；PWM、旁路和最终整机资源仍保持候选或 `TBD`。CubeMX 生成的 HAL C 代码通过薄适配层接入，HAL 回调只采集固定大小数据。
 
 ## 快速开始
 
-文档和工具可立即使用；Issue #3 的最小点灯/UART 工程已可构建、烧录和验收；最终控制器工程仍需等引脚表确认后再由 STM32CubeMX 生成：
+文档和工具可立即使用；Issue #3 的最小点灯/UART 工程及 Issue #6 的双路 Hall 捕获工程均可构建。捕获工程尚待刷写和 L1 实机验收，不能作为最终控制器配置：
 
 ```bash
 python3 -m venv .venv
@@ -120,6 +120,8 @@ UART 第一阶段发送到电脑；PX4 不会自动理解这些数据。若未�
 - [x] 文档、Issue/PR 模板和 STM32 C++17 模块骨架
 - [x] synthetic/demo CSV 绘图工具与主机侧基础测试
 - [x] WeAct 核心板 USB DFU、PC6 点灯与 PA9 单向最小 UART 心跳实机验证
+- [x] 双路 Hall 候选引脚、CubeMX 配置、HAL 捕获和 UART 校验工具
+- [ ] 双路 Hall 无脉冲/单路/同时触发及逻辑分析仪周期对照
 - [ ] 硬件型号、电压、协议和引脚确认
 - [ ] 霍尔、PWM、旁路及完整 UART CSV 遥测实机验证
 - [ ] 开环基线、同步控制和故障注入测试
@@ -127,7 +129,7 @@ UART 第一阶段发送到电脑；PX4 不会自动理解这些数据。若未�
 
 ## 已知限制
 
-- 飞控外壳型号、PX4 v1.12.3、接收机型号（FS-SR8；旧照片识读 FS-iA10B 已更正）、双发后推布局、两只相同电调（固件标识均为 `Flycolor_Raptor_5`）以及 3S1P/11.1V/4000mAh/100C 电池额定信息已确认；当前 `SYS_AUTOSTART=1001`（HIL Quadcopter X）与目标不一致。Pixhawk 6C Mini 硬件修订、接收机实际输出模式、电池化学体系/实测电压、螺旋桨和 STM32 引脚仍未确认。
+- 飞控外壳型号、PX4 v1.12.3、接收机型号（FS-SR8；旧照片识读 FS-iA10B 已更正）、双发后推布局、两只相同电调（固件标识均为 `Flycolor_Raptor_5`）以及 3S1P/11.1V/4000mAh/100C 电池额定信息已确认；当前 `SYS_AUTOSTART=1001`（HIL Quadcopter X）与目标不一致。Pixhawk 6C Mini 硬件修订、接收机实际输出模式、电池化学体系/实测电压和螺旋桨仍未确认；STM32 Hall 捕获已分配 PA0/PA1，其他整机引脚仍待验证。
 - A3144E 能否隔着电机外壳稳定检测磁场尚未验证。
 - 第一版只研究两个基础指令相同时的同步，不覆盖 PX4 主动差动推力。
 - 第一版旁路主要覆盖 MCU 复位或未启动，不能覆盖全部程序锁死故障。
