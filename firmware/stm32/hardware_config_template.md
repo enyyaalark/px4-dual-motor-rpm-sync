@@ -24,6 +24,8 @@
 | HCT157 select | TBD | TBD | GPIO | n/a | PX4 直通 | TBD |
 | UART TX | TBD | TBD | TBD | n/a | 高阻 | TBD |
 
+候选分配记录在 `docs/pin-map.md`。只有在成员 A 完成实板排针复核、CubeMX 无冲突检查和对应 Issue 证据登记后，才把候选值复制到本表；本模板继续保持 `TBD`，避免被误认为已验证硬件配置。
+
 ## 标定参数
 
 - `pulses_per_revolution`: `TBD`（必须有独立转速计证据）
