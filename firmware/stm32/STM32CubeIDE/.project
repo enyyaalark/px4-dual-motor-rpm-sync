@@ -41,6 +41,16 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Src/gpio.c</locationURI>
 		</link>
 		<link>
+			<name>rpm_sync_capture.ioc</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/rpm_sync_capture.ioc</locationURI>
+		</link>
+		<link>
+			<name>Application/User/hall_capture.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Src/hall_capture.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/main.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Src/main.c</locationURI>
@@ -54,6 +64,11 @@
 			<name>Application/User/stm32g4xx_it.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Src/stm32g4xx_it.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/tim.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Src/tim.c</locationURI>
 		</link>
 		<link>
 			<name>Application/User/usart.c</name>
@@ -129,6 +144,16 @@
 			<name>Drivers/STM32G4xx_HAL_Driver/stm32g4xx_hal_rcc_ex.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc_ex.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32G4xx_HAL_Driver/stm32g4xx_hal_tim.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_tim.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32G4xx_HAL_Driver/stm32g4xx_hal_tim_ex.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_tim_ex.c</locationURI>
 		</link>
 		<link>
 			<name>Drivers/STM32G4xx_HAL_Driver/stm32g4xx_hal_uart.c</name>
