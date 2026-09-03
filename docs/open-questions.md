@@ -15,7 +15,7 @@
 | Q09 | HCT157/HC14 实物厂商与供电方案 | 电平阈值和绝对额定值必须按数据手册确认 | role:hardware | 逻辑电路上电 |
 | Q10 | 刚性台架、防护罩和急停方案 | 带桨测试的前置安全条件 | 两人共同 | M3 带桨测试 |
 | Q11 | CH340 USB-TTL 到 STM32 的电平转换方案 | 当前 TXD 空闲高电平实测为 5V，不能直连 STM32；T01 仅使用 STM32 TX 到 CH340 RX 的单向链路 | role:hardware | 双向 UART 或任何 CH340 TX 接入 |
-| Q12 | 中央 SWD 孔位的排针焊接时间 | 实物照片已确认两侧 I/O 排针已组装，`PA9` 与侧边 `GND` 已用于单向 UART 验证；中央 `DIO/CLK/GND` SWD 孔位仍未焊接 | 两人共同 | SWD 调试；其他 I/O 任务仍需在最终引脚分配后逐项复核 |
+| Q12 | 中央 `DIO/CLK/GND` SWD 排针已焊接；三线连接复核与 SWD 目标识别仍待完成 | 两侧 I/O 排针和中央 SWD 排针均已组装；`PA9` 与侧边 `GND` 已用于单向 UART 验证，但焊接完成不等于 SWD 链路已验证 | 两人共同 | SWD 调试；其他 I/O 任务仍需在最终引脚分配后逐项复核 |
 
 ## 决策记录模板
 
@@ -43,3 +43,7 @@
 - Q04：用户确认两只 Raptor5 G071-35A ESC 的固件标识均为 `Flycolor_Raptor_5`；固件版本号、配置参数、3.3V 控制电平接受度和失联行为仍需实物/测量证据。复核：成员 B（PR #51 评审）。
 - Q05：用户补充确认电池容量 4000mAh，额定信息完整为 3S1P、11.1V、4000mAh、100C；化学体系、满充/当前实测电压、连接器和线规保持 `TBD`，等待电池标签照片与实测。复核：成员 B（PR #51 评审）。
 - 上述确认记录于 PR #51 评审意见及 Issue #1/#2 评论；基线同步更新至 README、`docs/hardware-overview.md`、`docs/bill-of-materials.md`、`docs/open-questions.md`、`docs/voltage-interface-table.md` 与 CHANGELOG。
+
+## 2026-09-03 确认记录
+
+- Q12：用户确认核心板中央 `DIO/CLK/GND` SWD 排针已经焊接。三线信号对应关系、仅 USB-C 供电条件、外围隔离、ST-LINK 只读目标识别以及断开后的原固件恢复仍未验证，继续由 Issue #48 跟踪；不得由焊接状态推断 SWD 链路可用。
