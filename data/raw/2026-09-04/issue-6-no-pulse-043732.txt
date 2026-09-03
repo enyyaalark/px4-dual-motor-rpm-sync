@@ -1,0 +1,5 @@
+rpm_sync_capture,v1,t_ms=1589000,ch1_valid=0,ch1_period_us=0,ch1_age_ms=1589000,ch2_valid=0,ch2_period_us=0,ch2_age_ms=1589000
+rpm_sync_capture,v1,t_ms=1590000,ch1_valid=0,ch1_period_us=0,ch1_age_ms=1590000,ch2_valid=0,ch2_period_us=0,ch2_age_ms=1590000
+rpm_sync_capture,v1,t_ms=1591000,ch1_valid=0,ch1_period_us=0,ch1_age_ms=1591000,ch2_valid=0,ch2_period_us=0,ch2_age_ms=1591000
+rpm_sync_capture,v1,t_ms=1592000,ch1_valid=0,ch1_period_us=0,ch1_age_ms=1592000,ch2_valid=0,ch2_period_us=0,ch2_age_ms=1592000
+rpm_sync_capture,v1,t_ms=1593000,ch1_valid=0,ch1_period_us=0,ch1_age_ms=1593000,ch2_valid=0,ch2_period_us=0,ch2_age_ms=1593000

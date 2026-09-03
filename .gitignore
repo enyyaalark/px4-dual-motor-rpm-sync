@@ -30,6 +30,14 @@ data/raw/*
 # 例外：2026-09-03 Issue #6 双路 L1 串扰原始证据（sigrok .sr/.pvs、波形 PNG）。
 !data/raw/2026-09-03/
 !data/raw/2026-09-03/*
+# 例外：2026-09-04 Issue #6 双路 Hall 捕获 UART 原始证据，仅纳入有效四项
+# （无脉冲/Hall1/Hall2/复位双路；无串口设备名或序列号）。旧/无效与空文件不纳入。
+!data/raw/2026-09-04/
+data/raw/2026-09-04/*
+!data/raw/2026-09-04/issue-6-no-pulse-043732.txt
+!data/raw/2026-09-04/issue-6-ch1-manual-retry-044202.txt
+!data/raw/2026-09-04/issue-6-ch2-manual-retry-044527.txt
+!data/raw/2026-09-04/issue-6-dual-restart-050637.txt
 data/processed/*
 !data/processed/.gitkeep
 
