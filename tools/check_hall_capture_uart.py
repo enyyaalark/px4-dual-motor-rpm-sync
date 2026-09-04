@@ -67,6 +67,30 @@ def _parse_uint32(value: str, name: str) -> int:
     return parsed
 
 
+def _validate_rpm_semantics(
+    channel: int,
+    valid: bool,
+    period_us: int,
+    raw_rpm: int,
+    rpm: int,
+    status: str,
+) -> None:
+    prefix = f"ch{channel}"
+    if status == "VALID":
+        if not valid or period_us == 0 or raw_rpm == 0 or rpm != raw_rpm:
+            raise ValueError(f"{prefix} VALID fields are inconsistent")
+        return
+
+    if rpm != 0:
+        raise ValueError(f"{prefix} non-VALID status must have zero effective RPM")
+    if status in ("WAITING", "TIMED_OUT", "INVALID_CONFIG") and raw_rpm != 0:
+        raise ValueError(f"{prefix} {status} must have zero raw RPM")
+    if status == "WAITING" and (valid or period_us != 0):
+        raise ValueError(f"{prefix} WAITING must not report a valid period")
+    if status == "IMPLAUSIBLE_PULSE" and not valid:
+        raise ValueError(f"{prefix} IMPLAUSIBLE_PULSE must retain a captured period")
+
+
 def parse_capture_line(line: str) -> CaptureSample:
     """Parse one exact capture telemetry line or raise ValueError."""
     parts = line.strip().split(",")
@@ -100,6 +124,15 @@ def parse_capture_line(line: str) -> CaptureSample:
             raise ValueError("unknown RPM status")
         raw_rpm = (values["ch1_raw_rpm"], values["ch2_raw_rpm"])
         rpm = (values["ch1_rpm"], values["ch2_rpm"])
+        for channel in (1, 2):
+            _validate_rpm_semantics(
+                channel,
+                bool(values[f"ch{channel}_valid"]),
+                values[f"ch{channel}_period_us"],
+                values[f"ch{channel}_raw_rpm"],
+                values[f"ch{channel}_rpm"],
+                fields[f"ch{channel}_status"],
+            )
     else:
         statuses = (None, None)
         raw_rpm = (None, None)

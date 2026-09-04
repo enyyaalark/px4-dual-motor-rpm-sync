@@ -22,3 +22,6 @@ c++ -std=c++17 -Wall -Wextra -Werror -fsyntax-only firmware/stm32/App/*.cpp
 `test_pwm_output_adapter_cpp.py` 从 C ABI 调用真实 C++17 双路输出校验，覆盖成对限幅、
 非有限请求整组隔离、空指针和目标默认配置保持禁用。它不配置或启动 TIM1，也不证明
 真实 PWM 频率、脉宽、电平、同步更新或复位瞬态。
+
+`test_check_hall_capture_uart.py` 对 v2 捕获诊断增加状态/RPM 语义组合测试；非 `VALID`
+状态不得携带有效 RPM，等待、超时、配置无效和异常脉冲各自保持固件定义的诊断边界。

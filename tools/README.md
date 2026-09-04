@@ -73,6 +73,10 @@ python3 tools/check_bringup_uart.py \
 工具固定按 115200 8N1 接收，并只接受
 `rpm_sync_bringup,v1,board=weact_g431_qfn48,mode=MONITOR_ONLY`。读取有总时限，原始记录使用独占创建模式，已有文件不会被覆盖。串口设备名只在本地命令行传入，不写进仓库记录。
 
+`check_hall_capture_uart.py` 校验 `rpm_sync_capture,v1/v2`。对 v2 除固定字段和类型外，
+还会拒绝状态与 RPM 数值不一致的记录，例如 `TIMED_OUT` 携带非零 RPM，或
+`VALID` 没有有效周期。校验通过只证明记录内部一致，不证明 PPR、精度或实机状态。
+
 ### Ubuntu 上 CH340 被 brltty 抢占
 
 若 `lsusb` 能看到 `1a86:7523`，但 `/dev/ttyUSB*` 设备节点出现后立即消失，并且内核日志包含 `interface 0 claimed by ch341 while 'brltty' sets config #1`，说明盲文终端服务错误抢占了 CH340，而不是 UART 接线或固件已经验证失败。

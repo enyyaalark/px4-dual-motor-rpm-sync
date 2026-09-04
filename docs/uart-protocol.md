@@ -49,3 +49,18 @@ timestamp_ms,base_pwm_us,rpm1,rpm2,error_rpm,error_percent,correction_us,pwm1_us
 主机测试会把真实 C++ 格式化结果交给 Python 标准 CSV 解析器，验证 11 字段顺序及前 9 个数值字段；它不验证 UART 波特率、周期、发送队列、DMA、丢行率或实时影响。
 
 当前实现使用 `snprintf` 浮点格式。主机及 GNU Arm 语法检查不能证明目标板链接的 newlib/newlib-nano 已包含浮点格式化支持，也不能证明 Flash、栈和执行时间开销可接受；这些必须在 #14 的目标板构建和周期测量中确认，必要时再改为受控的定点格式化。
+
+## 捕获诊断格式的过渡边界
+
+完整 11 字段格式接入目标前，`rpm_sync_capture,v2` 继续用于 Hall/RPM 诊断。
+`tools/check_hall_capture_uart.py` 除字段类型外还检查以下语义：
+
+- `VALID` 必须有非零有效周期、正的原始 RPM，且有效 RPM 等于原始 RPM；
+- `WAITING` 不得报告有效周期，原始/有效 RPM 均为零；
+- `TIMED_OUT` 和 `INVALID_CONFIG` 的原始/有效 RPM 均为零；
+- `IMPLAUSIBLE_PULSE` 必须保留捕获周期状态，可保留诊断原始 RPM，但有效 RPM 必须为零；
+- 任何非 `VALID` 状态都不得产生非零有效 RPM。
+
+当前目标还没有有效 PX4 PWM 输入、TIM1 输出和完整 `system_controller` 数据源，因此
+不得仅为了满足字段数量而发送看似完整的全零 11 字段行。等 #7/#9/#10 的实机参数和
+数据源成立后，再把真实 `TelemetrySample` 接入目标发送路径。
