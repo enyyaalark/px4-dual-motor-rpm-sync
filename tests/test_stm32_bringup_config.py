@@ -55,7 +55,7 @@ class Stm32BringupConfigTests(unittest.TestCase):
         configuration_names = re.findall(r'<configuration [^>]*name="(\w+)"', cproject)
         enabled = re.findall(
             r'superClass="com\.st\.stm32cube\.ide\.mcu\.gnu\.managedbuild'
-            r'\.option\.convertbinary" value="(\w+)"',
+            r'\.option\.convertbinary"[^>]* value="(\w+)"',
             cproject,
         )
 
@@ -76,6 +76,12 @@ class Stm32BringupConfigTests(unittest.TestCase):
                 re.search(r"/(?:home|tmp)/", content),
                 msg=f"local absolute path found in {path.relative_to(ROOT)}",
             )
+
+    def test_target_cpp_build_uses_cpp17_and_linker_script(self):
+        cproject = (STM32 / "STM32CubeIDE" / ".cproject").read_text()
+
+        self.assertEqual(2, cproject.count("languagestandard.value.isocpp17"))
+        self.assertEqual(2, cproject.count("cpp.linker.option.script.100000000"))
 
 
 if __name__ == "__main__":

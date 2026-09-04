@@ -21,6 +21,7 @@
 	<natures>
 		<nature>com.st.stm32cube.ide.mcu.MCUProjectNature</nature>
 		<nature>org.eclipse.cdt.core.cnature</nature>
+		<nature>org.eclipse.cdt.core.ccnature</nature>
 		<nature>com.st.stm32cube.ide.mcu.MCUCubeIdeServicesRevAev2ProjectNature</nature>
 		<nature>com.st.stm32cube.ide.mcu.MCUNonUnderRootProjectNature</nature>
 		<nature>com.st.stm32cube.ide.mcu.MCUCubeProjectNature</nature>
@@ -54,6 +55,21 @@
 			<name>Application/User/main.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Src/main.c</locationURI>
+		</link>
+		<link>
+			<name>Application/User/rpm_evaluator.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/App/rpm_evaluator.cpp</locationURI>
+		</link>
+		<link>
+			<name>Application/User/rpm_capture.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/App/rpm_capture.cpp</locationURI>
+		</link>
+		<link>
+			<name>Application/User/hall_monitor.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/App/hall_monitor.cpp</locationURI>
 		</link>
 		<link>
 			<name>Application/User/stm32g4xx_hal_msp.c</name>

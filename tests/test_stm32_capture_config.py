@@ -51,11 +51,20 @@ class Stm32CaptureConfigTests(unittest.TestCase):
         main_source = (STM32 / "Src" / "main.c").read_text()
         interrupt_source = (STM32 / "Src" / "hall_capture.c").read_text()
 
-        self.assertIn("rpm_sync_capture,v1", main_source)
         self.assertIn("ch1_valid=%u", main_source)
         self.assertIn("ch2_valid=%u", main_source)
         self.assertIn("HallCapture_Read(hall_snapshots)", main_source)
+        self.assertIn("RpmEvaluator_EvaluateConfigured", main_source)
+        self.assertIn("rpm_sync_capture,v2", main_source)
         self.assertNotIn("HAL_UART_Transmit", interrupt_source)
+
+    def test_cpp_rpm_adapter_is_linked_into_target_project(self):
+        project = (STM32 / "STM32CubeIDE" / ".project").read_text()
+
+        self.assertIn("org.eclipse.cdt.core.ccnature", project)
+        self.assertIn("Application/User/rpm_evaluator.cpp", project)
+        self.assertIn("Application/User/rpm_capture.cpp", project)
+        self.assertIn("Application/User/hall_monitor.cpp", project)
 
 
 if __name__ == "__main__":
