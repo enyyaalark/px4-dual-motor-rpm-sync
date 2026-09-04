@@ -18,3 +18,7 @@ c++ -std=c++17 -Wall -Wextra -Werror -fsyntax-only firmware/stm32/App/*.cpp
 
 `test_calibrate_ppr.py` 覆盖双电机整数 PPR 候选、保守误差边界、稳定点数量、无效
 输入和处理结果不可覆盖。用例完全是 synthetic 数值，不是实机 PPR 或精度证据。
+
+`test_pwm_output_adapter_cpp.py` 从 C ABI 调用真实 C++17 双路输出校验，覆盖成对限幅、
+非有限请求整组隔离、空指针和目标默认配置保持禁用。它不配置或启动 TIM1，也不证明
+真实 PWM 频率、脉宽、电平、同步更新或复位瞬态。
