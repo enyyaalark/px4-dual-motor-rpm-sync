@@ -12,8 +12,8 @@ from pathlib import Path
 
 BAUD_RATE = 115200
 EXPECTED_SOURCE = "rpm_sync_capture"
-EXPECTED_VERSION = "v1"
-EXPECTED_KEYS = (
+SUPPORTED_VERSIONS = ("v1", "v2")
+EXPECTED_KEYS_V1 = (
     "t_ms",
     "ch1_valid",
     "ch1_period_us",
@@ -21,6 +21,28 @@ EXPECTED_KEYS = (
     "ch2_valid",
     "ch2_period_us",
     "ch2_age_ms",
+)
+EXPECTED_KEYS_V2 = (
+    "t_ms",
+    "ch1_valid",
+    "ch1_period_us",
+    "ch1_age_ms",
+    "ch1_raw_rpm",
+    "ch1_rpm",
+    "ch1_status",
+    "ch2_valid",
+    "ch2_period_us",
+    "ch2_age_ms",
+    "ch2_raw_rpm",
+    "ch2_rpm",
+    "ch2_status",
+)
+RPM_STATUSES = (
+    "WAITING",
+    "VALID",
+    "TIMED_OUT",
+    "INVALID_CONFIG",
+    "IMPLAUSIBLE_PULSE",
 )
 UINT32_MAX = (1 << 32) - 1
 
@@ -31,6 +53,9 @@ class CaptureSample:
     valid: tuple[bool, bool]
     period_us: tuple[int, int]
     age_ms: tuple[int, int]
+    raw_rpm: tuple[int | None, int | None]
+    rpm: tuple[int | None, int | None]
+    status: tuple[str | None, str | None]
 
 
 def _parse_uint32(value: str, name: str) -> int:
@@ -45,10 +70,12 @@ def _parse_uint32(value: str, name: str) -> int:
 def parse_capture_line(line: str) -> CaptureSample:
     """Parse one exact capture telemetry line or raise ValueError."""
     parts = line.strip().split(",")
-    if len(parts) != 9:
-        raise ValueError("capture line must contain nine comma-separated fields")
-    if parts[0] != EXPECTED_SOURCE or parts[1] != EXPECTED_VERSION:
+    if len(parts) < 2 or parts[0] != EXPECTED_SOURCE or parts[1] not in SUPPORTED_VERSIONS:
         raise ValueError("unexpected capture source or version")
+
+    expected_keys = EXPECTED_KEYS_V1 if parts[1] == "v1" else EXPECTED_KEYS_V2
+    if len(parts) != len(expected_keys) + 2:
+        raise ValueError("capture line contains the wrong number of fields")
 
     fields: dict[str, str] = {}
     for part in parts[2:]:
@@ -58,19 +85,34 @@ def parse_capture_line(line: str) -> CaptureSample:
         if key in fields:
             raise ValueError(f"duplicate capture field: {key}")
         fields[key] = value
-    if tuple(fields) != EXPECTED_KEYS:
+    if tuple(fields) != expected_keys:
         raise ValueError("unexpected capture field order or names")
 
-    values = {key: _parse_uint32(fields[key], key) for key in EXPECTED_KEYS}
+    numeric_keys = tuple(key for key in expected_keys if not key.endswith("_status"))
+    values = {key: _parse_uint32(fields[key], key) for key in numeric_keys}
     for key in ("ch1_valid", "ch2_valid"):
         if values[key] not in (0, 1):
             raise ValueError(f"{key} must be 0 or 1")
+
+    if parts[1] == "v2":
+        statuses = (fields["ch1_status"], fields["ch2_status"])
+        if any(status not in RPM_STATUSES for status in statuses):
+            raise ValueError("unknown RPM status")
+        raw_rpm = (values["ch1_raw_rpm"], values["ch2_raw_rpm"])
+        rpm = (values["ch1_rpm"], values["ch2_rpm"])
+    else:
+        statuses = (None, None)
+        raw_rpm = (None, None)
+        rpm = (None, None)
 
     return CaptureSample(
         timestamp_ms=values["t_ms"],
         valid=(bool(values["ch1_valid"]), bool(values["ch2_valid"])),
         period_us=(values["ch1_period_us"], values["ch2_period_us"]),
         age_ms=(values["ch1_age_ms"], values["ch2_age_ms"]),
+        raw_rpm=raw_rpm,
+        rpm=rpm,
+        status=statuses,
     )
 
 

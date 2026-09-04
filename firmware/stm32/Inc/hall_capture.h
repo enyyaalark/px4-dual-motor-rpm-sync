@@ -12,6 +12,7 @@ typedef struct
 {
   uint32_t period_ticks;
   uint32_t last_pulse_ms;
+  uint8_t has_pulse;
   uint8_t has_period;
 } HallCaptureSnapshot;
 

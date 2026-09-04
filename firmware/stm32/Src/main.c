@@ -26,6 +26,7 @@
 /* USER CODE BEGIN Includes */
 
 #include "hall_capture.h"
+#include "rpm_evaluator.h"
 #include <stdio.h>
 
 /* USER CODE END Includes */
@@ -56,7 +57,8 @@
 static uint32_t last_led_tick_ms;
 static uint32_t last_telemetry_tick_ms;
 static HallCaptureSnapshot hall_snapshots[2];
-static uint8_t capture_telemetry[160];
+static RpmEvaluationResult rpm_results[2];
+static uint8_t capture_telemetry[320];
 static const uint8_t telemetry_heartbeat[] =
   "rpm_sync_bringup,v1,board=weact_g431_qfn48,mode=MONITOR_ONLY\r\n";
 
@@ -139,18 +141,36 @@ int main(void)
     {
       last_telemetry_tick_ms = now_ms;
       HallCapture_Read(hall_snapshots);
+      for (uint32_t channel = 0U; channel < 2U; ++channel)
+      {
+        const RpmEvaluationInput input = {
+          hall_snapshots[channel].period_ticks,
+          hall_snapshots[channel].last_pulse_ms,
+          hall_snapshots[channel].has_pulse,
+          hall_snapshots[channel].has_period
+        };
+        rpm_results[channel] = RpmEvaluator_EvaluateConfigured(&input, now_ms);
+      }
       const int telemetry_length = snprintf(
         (char *)capture_telemetry,
         sizeof(capture_telemetry),
-        "rpm_sync_capture,v1,t_ms=%lu,ch1_valid=%u,ch1_period_us=%lu,"
-        "ch1_age_ms=%lu,ch2_valid=%u,ch2_period_us=%lu,ch2_age_ms=%lu\r\n",
+        "rpm_sync_capture,v2,t_ms=%lu,ch1_valid=%u,ch1_period_us=%lu,"
+        "ch1_age_ms=%lu,ch1_raw_rpm=%lu,ch1_rpm=%lu,ch1_status=%s,"
+        "ch2_valid=%u,ch2_period_us=%lu,ch2_age_ms=%lu,ch2_raw_rpm=%lu,"
+        "ch2_rpm=%lu,ch2_status=%s\r\n",
         (unsigned long)now_ms,
         (unsigned int)hall_snapshots[0].has_period,
-        (unsigned long)hall_snapshots[0].period_ticks,
+        (unsigned long)rpm_results[0].period_ticks,
         (unsigned long)(now_ms - hall_snapshots[0].last_pulse_ms),
+        (unsigned long)rpm_results[0].raw_rpm,
+        (unsigned long)rpm_results[0].rpm,
+        RpmEvaluator_StatusName(rpm_results[0].status),
         (unsigned int)hall_snapshots[1].has_period,
-        (unsigned long)hall_snapshots[1].period_ticks,
-        (unsigned long)(now_ms - hall_snapshots[1].last_pulse_ms));
+        (unsigned long)rpm_results[1].period_ticks,
+        (unsigned long)(now_ms - hall_snapshots[1].last_pulse_ms),
+        (unsigned long)rpm_results[1].raw_rpm,
+        (unsigned long)rpm_results[1].rpm,
+        RpmEvaluator_StatusName(rpm_results[1].status));
 
       if ((telemetry_length > 0) &&
           ((size_t)telemetry_length < sizeof(capture_telemetry)))

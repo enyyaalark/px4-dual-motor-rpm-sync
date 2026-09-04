@@ -35,6 +35,7 @@ void HallCapture_Read(HallCaptureSnapshot snapshots[2])
   {
     snapshots[channel].period_ticks = channels[channel].period_ticks;
     snapshots[channel].last_pulse_ms = channels[channel].last_pulse_ms;
+    snapshots[channel].has_pulse = channels[channel].has_pulse;
     snapshots[channel].has_period = channels[channel].has_period;
   }
   if (primask == 0U)

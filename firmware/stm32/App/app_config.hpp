@@ -14,7 +14,9 @@ inline constexpr std::uint16_t kPwmOutputMaxUs = 0U;
 
 // Closed-loop control remains disabled until hardware calibration.
 inline constexpr bool kSyncControlDefaultOn = false;
+inline constexpr float kHallTimerHz = 1'000'000.0F;
 inline constexpr float kPulsesPerRevolution = 0.0F;
+inline constexpr float kMaximumRpm = 0.0F;
 inline constexpr float kKpDefault = 0.0F;
 inline constexpr float kKiDefault = 0.0F;
 inline constexpr float kDeadbandRpmDefault = 0.0F;
