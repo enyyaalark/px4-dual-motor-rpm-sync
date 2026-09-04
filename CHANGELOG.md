@@ -6,6 +6,8 @@
 
 ### Added
 
+- 2026-09-04：Issue #8 增加 PPR 标定计算工具和主机测试，按电机从多个参考 RPM/Hall 周期点生成整数 PPR 候选、逐点误差与保守精度判定；原始数据不可覆盖，缺少可追溯转速计精度时强制标记为未验证，不将 synthetic 计算或 1 RPM 分辨率表述为 3% 实机精度证据。
+
 - 2026-09-04：Issue #7 将双路 TIM2 Hall 快照通过 C/C++ 薄适配层接入现有 RPM 评估逻辑，`rpm_sync_capture,v2` 增加原始/有效 RPM 和明确状态；UART 校验工具兼容历史 v1。PPR、超时和最大 RPM 仍为无效/TBD，当前目标构建只报告 `INVALID_CONFIG` 和零 RPM，闭环保持关闭。
 
 - Issue #6 双路 Hall 捕获候选 CubeMX 配置：PA0/TIM2_CH1 与 PA1/TIM2_CH2 共用 1 MHz、32 位时间基准；加入有界 ISR 快照、双通道启动、主循环捕获遥测和配置回归测试。CubeMX 生成已验证，实机波形、滤波参数和 PPR 仍待验证。

@@ -15,3 +15,6 @@ c++ -std=c++17 -Wall -Wextra -Werror -fsyntax-only firmware/stm32/App/*.cpp
 `test_system_controller.py` 会临时编译并执行 `tests/cpp/test_system_controller.cpp`，直接验证 `system_controller` 的状态迁移、旁路门控、基础 PWM 透传、同步修正、低速禁止，以及霍尔超时/异常脉冲和 PWM 超时/越界的故障刷新、修正与积分清零和当前非锁存恢复行为。用例只使用 synthetic 输入，未接入 HAL、定时器或 UART；锁存和去抖策略仍为 `TBD`。
 
 硬件测试证据按 `docs/test-plan.md` 保存，并在对应 Issue/PR 中链接。
+
+`test_calibrate_ppr.py` 覆盖双电机整数 PPR 候选、保守误差边界、稳定点数量、无效
+输入和处理结果不可覆盖。用例完全是 synthetic 数值，不是实机 PPR 或精度证据。
