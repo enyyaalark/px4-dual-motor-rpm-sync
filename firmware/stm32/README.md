@@ -4,6 +4,12 @@
 
 `rpm_sync_bringup.ioc` 是 Issue #3 专用的最小点灯/UART 配置，不是最终控制器引脚表。它只使用经 WeAct Studio V1.0 原理图和官方示例确认的板级资源：QFN48 `STM32G431CBU6`、`PC6` 用户 LED、`PA13/PA14` SWD，以及 STM32 数据手册支持的 `PA9/PA10` USART1。后续霍尔、PWM、旁路和 DMA 分配仍保持 `TBD`。
 
+Issue #10 已把双路 PWM 校验通过 `pwm_output_adapter.h` 暴露给生成的 C/HAL 层，并把
+实现链接进目标工程。由于 ESC 实测刷新频率和输出边界仍为 `TBD`，
+`rpm_sync_capture.ioc` 不配置 TIM1，目标默认配置返回 `INVALID_CONFIG`，不得启动输出。
+取得参数后才可按 `docs/pin-map.md` 的候选 PA8/TIM1_CH1、PA10/TIM1_CH3 生成配置，
+首次只接逻辑分析仪验证。
+
 `rpm_sync_capture.ioc` 在该基线上加入 Issue #6 候选捕获：`PA0/TIM2_CH1` 和 `PA1/TIM2_CH2` 共用 1 MHz、32 位自由运行计数器，双路均为上升沿直接输入、中断捕获。数字滤波暂为 `0`，必须根据 HC14 实际波形和最高预期频率再确定。`hall_capture.c` 的中断路径只记录捕获 tick、周期和毫秒时间戳；主循环快照经 `rpm_evaluator.cpp` 薄适配层交给 C++17 的 `hall_monitor`，每秒通过 PA9 输出一次 `rpm_sync_capture,v2` 遥测，包含两路有效标志、周期（µs）、最后脉冲年龄（ms）、原始/有效 RPM 和状态。
 
 PPR、Hall 超时和最大 RPM 仍保持 `TBD`/无效配置，因此当前构建会明确输出 `INVALID_CONFIG` 和零 RPM，不会用未标定参数产生看似有效的转速。Issue #8 完成标定并更新集中配置后，同一周期任务路径才会产生 `VALID`、`TIMED_OUT` 或 `IMPLAUSIBLE_PULSE` 结果。闭环继续默认关闭。

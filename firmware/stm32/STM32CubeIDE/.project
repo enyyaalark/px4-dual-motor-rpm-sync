@@ -62,6 +62,16 @@
 			<locationURI>PARENT-1-PROJECT_LOC/App/rpm_evaluator.cpp</locationURI>
 		</link>
 		<link>
+			<name>Application/User/pwm_output_adapter.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/App/pwm_output_adapter.cpp</locationURI>
+		</link>
+		<link>
+			<name>Application/User/pwm_output.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/App/pwm_output.cpp</locationURI>
+		</link>
+		<link>
 			<name>Application/User/rpm_capture.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/App/rpm_capture.cpp</locationURI>

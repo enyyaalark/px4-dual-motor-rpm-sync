@@ -66,6 +66,15 @@ class Stm32CaptureConfigTests(unittest.TestCase):
         self.assertIn("Application/User/rpm_capture.cpp", project)
         self.assertIn("Application/User/hall_monitor.cpp", project)
 
+    def test_cpp_pwm_output_adapter_is_linked_but_timer_is_not_guessed(self):
+        project = (STM32 / "STM32CubeIDE" / ".project").read_text()
+        ioc = load_ioc()
+
+        self.assertIn("Application/User/pwm_output_adapter.cpp", project)
+        self.assertIn("Application/User/pwm_output.cpp", project)
+        self.assertNotIn("TIM1", ioc.get("Mcu.IP0", ""))
+        self.assertNotIn("S_TIM1", "\n".join(f"{key}={value}" for key, value in ioc.items()))
+
 
 if __name__ == "__main__":
     unittest.main()
