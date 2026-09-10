@@ -38,8 +38,21 @@ data/raw/2026-09-04/*
 !data/raw/2026-09-04/issue-6-ch1-manual-retry-044202.txt
 !data/raw/2026-09-04/issue-6-ch2-manual-retry-044527.txt
 !data/raw/2026-09-04/issue-6-dual-restart-050637.txt
+# 例外：2026-09-10 Issue #8 拆桨 PPR 多点标定的六个有效 UART 周期记录。
+# 文件名保留现场原名；电机/转速点映射见 processed sources CSV。
+!data/raw/2026-09-10/
+data/raw/2026-09-10/*
+!data/raw/2026-09-10/m1_p1_r8.txt
+!data/raw/2026-09-10/m1_p2_r11.txt
+!data/raw/2026-09-10/m1_p2_r12.txt
+!data/raw/2026-09-10/m1_p2_r13.txt
+!data/raw/2026-09-10/m1_p2_r17.txt
+!data/raw/2026-09-10/m1_p2_r20.txt
 data/processed/*
 !data/processed/.gitkeep
+!data/processed/2026-09-10-ppr-calibration-input.csv
+!data/processed/2026-09-10-ppr-calibration-results.csv
+!data/processed/2026-09-10-ppr-calibration-sources.csv
 
 # Temporary hardware photo inbox
 Pictures/

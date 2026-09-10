@@ -12,7 +12,10 @@ Issue #10 已把双路 PWM 校验通过 `pwm_output_adapter.h` 暴露给生成�
 
 `rpm_sync_capture.ioc` 在该基线上加入 Issue #6 候选捕获：`PA0/TIM2_CH1` 和 `PA1/TIM2_CH2` 共用 1 MHz、32 位自由运行计数器，双路均为上升沿直接输入、中断捕获。数字滤波暂为 `0`，必须根据 HC14 实际波形和最高预期频率再确定。`hall_capture.c` 的中断路径只记录捕获 tick、周期和毫秒时间戳；主循环快照经 `rpm_evaluator.cpp` 薄适配层交给 C++17 的 `hall_monitor`，每秒通过 PA9 输出一次 `rpm_sync_capture,v2` 遥测，包含两路有效标志、周期（µs）、最后脉冲年龄（ms）、原始/有效 RPM 和状态。
 
-PPR、Hall 超时和最大 RPM 仍保持 `TBD`/无效配置，因此当前构建会明确输出 `INVALID_CONFIG` 和零 RPM，不会用未标定参数产生看似有效的转速。Issue #8 完成标定并更新集中配置后，同一周期任务路径才会产生 `VALID`、`TIMED_OUT` 或 `IMPLAUSIBLE_PULSE` 结果。闭环继续默认关闭。
+2026-09-10 的两电机三点标定已把 PPR 确认为 `1` 并更新集中配置。Hall 超时和最大
+RPM 仍保持 `TBD`/无效，因此当前构建仍会明确输出 `INVALID_CONFIG` 和零有效 RPM，
+不会用不完整配置产生看似有效的转速。两项边界完成标定后，同一周期任务路径才会
+产生 `VALID`、`TIMED_OUT` 或 `IMPLAUSIBLE_PULSE` 结果。闭环继续默认关闭。
 
 接线完成后，可用 `tools/check_hall_capture_uart.py` 做有界采集。工具兼容历史 `v1` 周期记录，并严格检查 `v2` 的 RPM/状态字段、无符号 32 位范围和有效标志；它以独占创建方式保存原始文本，避免覆盖已有证据。例如：`python3 tools/check_hall_capture_uart.py --port <本机串口> --duration-s 15 --required-samples 5 --require-both-valid --output data/raw/<日期>/<新文件名>.txt`。串口设备名只在本地命令中填写，不提交到仓库。
 

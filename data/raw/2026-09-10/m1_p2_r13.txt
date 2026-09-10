@@ -1,0 +1,10 @@
+rpm_sync_capture,v1,t_ms=2632000,ch1_valid=0,ch1_period_us=0,ch1_age_ms=2466856,ch2_valid=1,ch2_period_us=33681,ch2_age_ms=11
+rpm_sync_capture,v1,t_ms=2633000,ch1_valid=0,ch1_period_us=0,ch1_age_ms=2467856,ch2_valid=1,ch2_period_us=33532,ch2_age_ms=4
+rpm_sync_capture,v1,t_ms=2634000,ch1_valid=0,ch1_period_us=0,ch1_age_ms=2468856,ch2_valid=1,ch2_period_us=33410,ch2_age_ms=31
+rpm_sync_capture,v1,t_ms=2635000,ch1_valid=0,ch1_period_us=0,ch1_age_ms=2469856,ch2_valid=1,ch2_period_us=33540,ch2_age_ms=25
+rpm_sync_capture,v1,t_ms=2636000,ch1_valid=0,ch1_period_us=0,ch1_age_ms=2470856,ch2_valid=1,ch2_period_us=33476,ch2_age_ms=22
+rpm_sync_capture,v1,t_ms=2637000,ch1_valid=0,ch1_period_us=0,ch1_age_ms=2471856,ch2_valid=1,ch2_period_us=33297,ch2_age_ms=21
+rpm_sync_capture,v1,t_ms=2638000,ch1_valid=0,ch1_period_us=0,ch1_age_ms=2472856,ch2_valid=1,ch2_period_us=33373,ch2_age_ms=21
+rpm_sync_capture,v1,t_ms=2639000,ch1_valid=0,ch1_period_us=0,ch1_age_ms=2473856,ch2_valid=1,ch2_period_us=33475,ch2_age_ms=20
+rpm_sync_capture,v1,t_ms=2640000,ch1_valid=0,ch1_period_us=0,ch1_age_ms=2474856,ch2_valid=1,ch2_period_us=33401,ch2_age_ms=16
+rpm_sync_capture,v1,t_ms=2641000,ch1_valid=0,ch1_period_us=0,ch1_age_ms=2475856,ch2_valid=1,ch2_period_us=33505,ch2_age_ms=12

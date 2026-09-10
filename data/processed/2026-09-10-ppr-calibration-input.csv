@@ -1,0 +1,7 @@
+motor_id,point_id,reference_rpm,hall_period_us
+motor1,P1,1735,34787
+motor1,P2,2358,25536
+motor1,P3,3100,19485.5
+motor2,P1,1770,33475.5
+motor2,P2,2320,25436
+motor2,P3,2980,20293
