@@ -12,10 +12,11 @@ inline constexpr std::uint16_t kPwmInputMaxUs = 0U;
 inline constexpr std::uint16_t kPwmOutputMinUs = 0U;
 inline constexpr std::uint16_t kPwmOutputMaxUs = 0U;
 
-// Closed-loop control remains disabled until hardware calibration.
+// PPR was established from the 2026-09-10 two-motor, three-point calibration.
+// Other RPM/control bounds remain invalid, so closed-loop control stays disabled.
 inline constexpr bool kSyncControlDefaultOn = false;
 inline constexpr float kHallTimerHz = 1'000'000.0F;
-inline constexpr float kPulsesPerRevolution = 0.0F;
+inline constexpr float kPulsesPerRevolution = 1.0F;
 inline constexpr float kMaximumRpm = 0.0F;
 inline constexpr float kKpDefault = 0.0F;
 inline constexpr float kKiDefault = 0.0F;

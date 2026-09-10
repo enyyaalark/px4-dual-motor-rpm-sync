@@ -1,0 +1,7 @@
+motor_id,point_id,reference_rpm,hall_channel,raw_file,hall_period_median_us,disposition
+motor1,P1,1735,ch2,data/raw/2026-09-10/m1_p1_r8.txt,34787,accepted
+motor1,P2,2358,ch2,data/raw/2026-09-10/m1_p2_r12.txt,25536,accepted
+motor1,P3,3100,ch2,data/raw/2026-09-10/m1_p2_r11.txt,19485.5,accepted_as_P3
+motor2,P1,1770,ch2,data/raw/2026-09-10/m1_p2_r13.txt,33475.5,accepted_as_motor2_P1
+motor2,P2,2320,ch2,data/raw/2026-09-10/m1_p2_r17.txt,25436,accepted_as_motor2_P2
+motor2,P3,2980,ch2,data/raw/2026-09-10/m1_p2_r20.txt,20293,accepted_as_motor2_P3
