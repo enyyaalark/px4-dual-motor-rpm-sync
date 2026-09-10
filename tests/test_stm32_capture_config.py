@@ -75,12 +75,12 @@ class Stm32CaptureConfigTests(unittest.TestCase):
         self.assertNotIn("TIM1", ioc.get("Mcu.IP0", ""))
         self.assertNotIn("S_TIM1", "\n".join(f"{key}={value}" for key, value in ioc.items()))
 
-    def test_calibrated_ppr_does_not_enable_incomplete_rpm_configuration(self):
+    def test_team_accepted_monitor_only_rpm_configuration_stays_closed_loop_off(self):
         config = (STM32 / "App" / "app_config.hpp").read_text()
 
         self.assertIn("kPulsesPerRevolution = 1.0F", config)
-        self.assertIn("kMaximumRpm = 0.0F", config)
-        self.assertIn("kHallTimeoutMs = 0U", config)
+        self.assertIn("kMaximumRpm = 3'300.0F", config)
+        self.assertIn("kHallTimeoutMs = 100U", config)
         self.assertIn("kSyncControlDefaultOn = false", config)
 
 
