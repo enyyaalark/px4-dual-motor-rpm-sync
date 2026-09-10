@@ -50,6 +50,33 @@ bool testInvalidPprAndImplausiblePulse() {
                   "implausible effective RPM is zero");
 }
 
+bool testConfiguredMonitorOnlyBounds() {
+    const RpmEvaluationInput at_limit{20'000U, 10U, 1U, 1U};
+    const RpmEvaluationResult valid_at_timeout =
+        RpmEvaluator_EvaluateConfigured(&at_limit, 110U);
+    const RpmEvaluationResult timed_out =
+        RpmEvaluator_EvaluateConfigured(&at_limit, 111U);
+
+    const RpmEvaluationInput over_limit{18'000U, 10U, 1U, 1U};
+    const RpmEvaluationResult implausible =
+        RpmEvaluator_EvaluateConfigured(&over_limit, 10U);
+
+    return expect(valid_at_timeout.status == RPM_EVALUATION_VALID,
+                  "configured sample is valid at 100 ms boundary") &&
+           expect(valid_at_timeout.rpm == 3'000U,
+                  "configured PPR converts 20 ms to 3000 RPM") &&
+           expect(timed_out.status == RPM_EVALUATION_TIMED_OUT,
+                  "configured sample times out after 100 ms") &&
+           expect(timed_out.rpm == 0U,
+                  "configured timeout zeros effective RPM") &&
+           expect(implausible.status == RPM_EVALUATION_IMPLAUSIBLE_PULSE,
+                  "configured 3300 RPM limit isolates faster pulse") &&
+           expect(implausible.raw_rpm == 3'333U,
+                  "configured over-limit raw RPM remains diagnostic") &&
+           expect(implausible.rpm == 0U,
+                  "configured over-limit effective RPM is zero");
+}
+
 }  // namespace
 
 int main() {
@@ -57,6 +84,7 @@ int main() {
     passed = testValidAndRoundedRpm() && passed;
     passed = testTimeoutZerosRpm() && passed;
     passed = testInvalidPprAndImplausiblePulse() && passed;
+    passed = testConfiguredMonitorOnlyBounds() && passed;
     if (!passed) {
         return 1;
     }
