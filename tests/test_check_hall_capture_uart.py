@@ -57,6 +57,50 @@ class CheckHallCaptureUartTests(unittest.TestCase):
             with self.subTest(line=line), self.assertRaises(ValueError):
                 check_capture.parse_capture_line(line)
 
+    def test_rejects_inconsistent_v2_rpm_semantics(self):
+        invalid_channel1_fields = (
+            "ch1_valid=1,ch1_period_us=5000,ch1_age_ms=1,ch1_raw_rpm=6000,"
+            "ch1_rpm=0,ch1_status=VALID",
+            "ch1_valid=1,ch1_period_us=5000,ch1_age_ms=1,ch1_raw_rpm=6000,"
+            "ch1_rpm=6000,ch1_status=TIMED_OUT",
+            "ch1_valid=0,ch1_period_us=0,ch1_age_ms=1,ch1_raw_rpm=1,"
+            "ch1_rpm=0,ch1_status=INVALID_CONFIG",
+            "ch1_valid=1,ch1_period_us=5000,ch1_age_ms=1,ch1_raw_rpm=0,"
+            "ch1_rpm=1,ch1_status=IMPLAUSIBLE_PULSE",
+            "ch1_valid=1,ch1_period_us=5000,ch1_age_ms=1,ch1_raw_rpm=0,"
+            "ch1_rpm=0,ch1_status=WAITING",
+        )
+        channel2 = (
+            "ch2_valid=0,ch2_period_us=0,ch2_age_ms=1,ch2_raw_rpm=0,"
+            "ch2_rpm=0,ch2_status=WAITING"
+        )
+
+        for channel1 in invalid_channel1_fields:
+            line = f"rpm_sync_capture,v2,t_ms=1,{channel1},{channel2}"
+            with self.subTest(channel1=channel1), self.assertRaises(ValueError):
+                check_capture.parse_capture_line(line)
+
+    def test_accepts_each_consistent_non_valid_status(self):
+        channel1_fields = (
+            "ch1_valid=0,ch1_period_us=0,ch1_age_ms=1,ch1_raw_rpm=0,"
+            "ch1_rpm=0,ch1_status=WAITING",
+            "ch1_valid=1,ch1_period_us=5000,ch1_age_ms=101,ch1_raw_rpm=0,"
+            "ch1_rpm=0,ch1_status=TIMED_OUT",
+            "ch1_valid=1,ch1_period_us=5000,ch1_age_ms=1,ch1_raw_rpm=0,"
+            "ch1_rpm=0,ch1_status=INVALID_CONFIG",
+            "ch1_valid=1,ch1_period_us=1000,ch1_age_ms=1,ch1_raw_rpm=30000,"
+            "ch1_rpm=0,ch1_status=IMPLAUSIBLE_PULSE",
+        )
+        channel2 = (
+            "ch2_valid=0,ch2_period_us=0,ch2_age_ms=1,ch2_raw_rpm=0,"
+            "ch2_rpm=0,ch2_status=WAITING"
+        )
+
+        for channel1 in channel1_fields:
+            line = f"rpm_sync_capture,v2,t_ms=1,{channel1},{channel2}"
+            with self.subTest(channel1=channel1):
+                check_capture.parse_capture_line(line)
+
     def test_raw_record_is_created_without_overwrite(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "capture.txt"
