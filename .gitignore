@@ -48,6 +48,11 @@ data/raw/2026-09-10/*
 !data/raw/2026-09-10/m1_p2_r13.txt
 !data/raw/2026-09-10/m1_p2_r17.txt
 !data/raw/2026-09-10/m1_p2_r20.txt
+# 例外：2026-09-11 Issue #7 当前 main/v2 的双路稳定旋转与停止归零 UART 证据。
+!data/raw/2026-09-11/
+data/raw/2026-09-11/*
+!data/raw/2026-09-11/issue-7-dual-stop-v2-run1.txt
+!data/raw/2026-09-11/issue-7-dual-stop-v2-run2.txt
 data/processed/*
 !data/processed/.gitkeep
 !data/processed/2026-09-10-ppr-calibration-input.csv

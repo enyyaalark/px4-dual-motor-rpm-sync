@@ -19,6 +19,13 @@ Issue #10 已把双路 PWM 校验通过 `pwm_output_adapter.h` 暴露给生成�
 `IMPLAUSIBLE_PULSE`；这不代表停止归零或过速边界已实机验证，也不允许超过
 3000 RPM 测试。闭环继续默认关闭，PWM 输出配置仍无效。
 
+2026-09-11 将 `main` 提交 `67e07c3` 的 Release 构建经三线 SWD 写入并校验后，
+`rpm_sync_capture,v2` 在 PA0/PA1 双路同时旋转时持续报告 `VALID`，停转后的下一秒
+UART 快照起双路均报告 `TIMED_OUT`，且 raw/effective RPM 均为 0。原始记录见
+`data/raw/2026-09-11/`。由于遥测周期为 1 秒，该证据不能测量精确的 100 ms 转换时刻；
+100/101 ms 软件边界仍由主机测试覆盖。测试指令、电池当次电压和固定细节未写入原始
+UART，完整 L2 条件复现仍需补充记录。
+
 接线完成后，可用 `tools/check_hall_capture_uart.py` 做有界采集。工具兼容历史 `v1` 周期记录，并严格检查 `v2` 的 RPM/状态字段、无符号 32 位范围和有效标志；它以独占创建方式保存原始文本，避免覆盖已有证据。例如：`python3 tools/check_hall_capture_uart.py --port <本机串口> --duration-s 15 --required-samples 5 --require-both-valid --output data/raw/<日期>/<新文件名>.txt`。串口设备名只在本地命令中填写，不提交到仓库。
 
 ## 计划结构
