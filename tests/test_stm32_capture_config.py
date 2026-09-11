@@ -96,6 +96,16 @@ class Stm32CaptureConfigTests(unittest.TestCase):
         self.assertIn("PwmInputEvaluator_EvaluateConfigured", main_source)
         self.assertIn("rpm_sync_pwm_input,v1", main_source)
 
+    def test_capture_snapshots_are_taken_before_evaluation_timestamps(self):
+        main_source = (STM32 / "Src" / "main.c").read_text()
+
+        hall_snapshot = main_source.index("HallCapture_Read(hall_snapshots)")
+        hall_now = main_source.index("const uint32_t hall_now_ms = HAL_GetTick()")
+        pwm_snapshot = main_source.index("PwmInputCapture_Read(pwm_input_snapshots)")
+        pwm_now = main_source.index("const uint32_t pwm_input_now_ms = HAL_GetTick()")
+        self.assertLess(hall_snapshot, hall_now)
+        self.assertLess(pwm_snapshot, pwm_now)
+
     def test_cpp_rpm_adapter_is_linked_into_target_project(self):
         project = (STM32 / "STM32CubeIDE" / ".project").read_text()
 

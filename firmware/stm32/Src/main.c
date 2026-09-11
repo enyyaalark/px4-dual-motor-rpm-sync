@@ -153,6 +153,7 @@ int main(void)
     {
       last_telemetry_tick_ms = now_ms;
       HallCapture_Read(hall_snapshots);
+      const uint32_t hall_now_ms = HAL_GetTick();
       for (uint32_t channel = 0U; channel < 2U; ++channel)
       {
         const RpmEvaluationInput input = {
@@ -161,7 +162,8 @@ int main(void)
           hall_snapshots[channel].has_pulse,
           hall_snapshots[channel].has_period
         };
-        rpm_results[channel] = RpmEvaluator_EvaluateConfigured(&input, now_ms);
+        rpm_results[channel] =
+          RpmEvaluator_EvaluateConfigured(&input, hall_now_ms);
       }
       const int telemetry_length = snprintf(
         (char *)capture_telemetry,
@@ -170,16 +172,16 @@ int main(void)
         "ch1_age_ms=%lu,ch1_raw_rpm=%lu,ch1_rpm=%lu,ch1_status=%s,"
         "ch2_valid=%u,ch2_period_us=%lu,ch2_age_ms=%lu,ch2_raw_rpm=%lu,"
         "ch2_rpm=%lu,ch2_status=%s\r\n",
-        (unsigned long)now_ms,
+        (unsigned long)hall_now_ms,
         (unsigned int)hall_snapshots[0].has_period,
         (unsigned long)rpm_results[0].period_ticks,
-        (unsigned long)(now_ms - hall_snapshots[0].last_pulse_ms),
+        (unsigned long)(hall_now_ms - hall_snapshots[0].last_pulse_ms),
         (unsigned long)rpm_results[0].raw_rpm,
         (unsigned long)rpm_results[0].rpm,
         RpmEvaluator_StatusName(rpm_results[0].status),
         (unsigned int)hall_snapshots[1].has_period,
         (unsigned long)rpm_results[1].period_ticks,
-        (unsigned long)(now_ms - hall_snapshots[1].last_pulse_ms),
+        (unsigned long)(hall_now_ms - hall_snapshots[1].last_pulse_ms),
         (unsigned long)rpm_results[1].raw_rpm,
         (unsigned long)rpm_results[1].rpm,
         RpmEvaluator_StatusName(rpm_results[1].status));
@@ -194,6 +196,7 @@ int main(void)
       }
 
       PwmInputCapture_Read(pwm_input_snapshots);
+      const uint32_t pwm_input_now_ms = HAL_GetTick();
       for (uint32_t channel = 0U; channel < 2U; ++channel)
       {
         const PwmInputEvaluationInput input = {
@@ -202,7 +205,7 @@ int main(void)
           pwm_input_snapshots[channel].has_sample
         };
         pwm_input_results[channel] =
-          PwmInputEvaluator_EvaluateConfigured(&input, now_ms);
+          PwmInputEvaluator_EvaluateConfigured(&input, pwm_input_now_ms);
       }
       const int pwm_input_telemetry_length = snprintf(
         (char *)pwm_input_telemetry,
@@ -212,18 +215,20 @@ int main(void)
         "ch1_age_ms=%lu,ch1_status=%s,"
         "ch2_seen=%u,ch2_period_us=%lu,ch2_raw_us=%u,ch2_us=%u,"
         "ch2_age_ms=%lu,ch2_status=%s\r\n",
-        (unsigned long)now_ms,
+        (unsigned long)pwm_input_now_ms,
         (unsigned int)pwm_input_snapshots[0].has_sample,
         (unsigned long)pwm_input_snapshots[0].period_us,
         (unsigned int)pwm_input_results[0].raw_pulse_width_us,
         (unsigned int)pwm_input_results[0].pulse_width_us,
-        (unsigned long)(now_ms - pwm_input_snapshots[0].last_update_ms),
+        (unsigned long)(pwm_input_now_ms -
+                        pwm_input_snapshots[0].last_update_ms),
         PwmInputEvaluator_StatusName(pwm_input_results[0].status),
         (unsigned int)pwm_input_snapshots[1].has_sample,
         (unsigned long)pwm_input_snapshots[1].period_us,
         (unsigned int)pwm_input_results[1].raw_pulse_width_us,
         (unsigned int)pwm_input_results[1].pulse_width_us,
-        (unsigned long)(now_ms - pwm_input_snapshots[1].last_update_ms),
+        (unsigned long)(pwm_input_now_ms -
+                        pwm_input_snapshots[1].last_update_ms),
         PwmInputEvaluator_StatusName(pwm_input_results[1].status));
 
       if ((pwm_input_telemetry_length > 0) &&
