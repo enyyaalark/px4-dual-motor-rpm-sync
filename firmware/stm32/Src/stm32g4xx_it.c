@@ -56,6 +56,8 @@
 
 /* External variables --------------------------------------------------------*/
 extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
+extern TIM_HandleTypeDef htim4;
 
 /* USER CODE BEGIN EV */
 
@@ -199,11 +201,30 @@ void SysTick_Handler(void)
 /* please refer to the startup file (startup_stm32g4xx.s).                    */
 /******************************************************************************/
 
-/* USER CODE BEGIN 1 */
-
+/**
+  * @brief This function handles TIM2 global interrupt.
+  */
 void TIM2_IRQHandler(void)
 {
   HAL_TIM_IRQHandler(&htim2);
 }
+
+/**
+  * @brief This function handles TIM3 global interrupt.
+  */
+void TIM3_IRQHandler(void)
+{
+  HAL_TIM_IRQHandler(&htim3);
+}
+
+/**
+  * @brief This function handles TIM4 global interrupt.
+  */
+void TIM4_IRQHandler(void)
+{
+  HAL_TIM_IRQHandler(&htim4);
+}
+
+/* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */

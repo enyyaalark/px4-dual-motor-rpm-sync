@@ -5,12 +5,12 @@
 | ID | 待确认项 | 为什么重要 | 负责人建议 | 阻塞内容 |
 |---|---|---|---|---|
 | Q01 | 飞控外壳已确认 `Pixhawk 6C Mini`；制造商和 Model A/B/legacy 硬件修订仍待确认 | 修订决定 PWM 电压选择位置和部分硬件能力 | role:hardware | PWM 电平确认与最终接线 |
-| Q02 | PX4 固件已通过 MAVLink 确认为 v1.12.3；当前 `SYS_AUTOSTART=1001`（HIL Quadcopter X）与项目目标不一致，待单独评审/更正 | 参数名、输出协议和行为需要绑定该版本；机架错误时禁止动力连接 | role:firmware | PX4 安全配置复现 |
+| Q02 | PX4 已更新为 1.17.0（提交 `d6f12ad1c4f70ad3230afd7d86e971421e02fef4`）；`SYS_AUTOSTART=2100`、`SYS_HITL=0`、MAIN1/2=Motor1/2，但双发几何和最终飞行配置仍未验收 | 参数名、输出协议和行为必须绑定精确版本；台架通道成立不等于飞行配置安全 | role:firmware | 最终 PX4 配置与飞行前评审 |
 | Q03 | 接收机已确认 FlySky `FS-SR8`（用户 2026-09-02 确认；旧照片识读 FS-iA10B 有误），厂家资料为 2.4GHz ANT 协议、输出可选 PWM/PPM/i-BUS/s-BUS；当前实际输出模式仍待确认（不能由型号推断） | 决定 PX4 输入配置 | role:hardware | 遥控全链路 |
 | Q04 | 两只 ESC 已确认为相同的 Flycolor `Raptor5 G071-35A`，固件标识均为 `Flycolor_Raptor_5`（用户确认）；固件版本号、配置、3.3V 接受度和失联行为仍待确认 | 决定 PWM 范围、刷新率和安全行为 | role:hardware | PWM 输出/安全 |
 | Q05 | 电池已确认为 3S1P，用户确认额定 11.1V、4000mAh、100C；化学体系、满充/当前实测电压、连接器和线规仍待确认 | 容量与 C 倍率共同决定理论电流；实测电压和连接决定动力风险与降压设计 | role:hardware | 带电机测试 |
 | Q06 | 螺旋桨尺寸与旋向 | 决定负载和机械安全 | role:hardware | 带桨测试 |
-| Q07 | Hall 捕获已形成 `PA0/PA1 + TIM2_CH1/CH2` 的 CubeMX 配置；当前 main/v2 已经 SWD 写入并记录双路同时有效与停止归零。最高预期频率、数字滤波、PWM、旁路和最终整机定时器/GPIO 分配仍待验证 | 决定完整 CubeMX 工程与布线 | role:firmware | PWM/旁路固件集成、最高频率/滤波 |
+| Q07 | Hall 捕获 `PA0/PA1 + TIM2_CH1/CH2` 已实机验证；PWM 输入 `PA6/TIM3_CH1 + PB6/TIM4_CH1` 已通过 CubeMX 生成和目标构建，但尚未烧录/实机捕获。PWM 输出、旁路及最终整机资源仍待验证 | 决定完整 CubeMX 工程与布线 | role:firmware | PWM 输入实机验证、PWM 输出/旁路集成 |
 | Q08 | 独立激光转速计型号/可用性 | PPR 和 3% 误差目标需要参考 | 两人共同 | M1 标定 |
 | Q09 | HCT157/HC14 实物厂商与供电方案 | 电平阈值和绝对额定值必须按数据手册确认 | role:hardware | 逻辑电路上电 |
 | Q10 | 刚性台架、防护罩和急停方案 | 带桨测试的前置安全条件 | 两人共同 | M3 带桨测试 |
@@ -35,6 +35,7 @@
 - Q04：临时照片可读到 Flycolor Raptor 5、35A、3–6S；厂家产品页对应 `Raptor5 G071-35A`，厂家手册列出 35A 持续、40A/10秒、无 BEC、3–6S，并支持普通 1–2ms PWM。用户后续确认第二只 ESC 同型号；两只实际固件、配置和输入电平阈值仍需实物/测量证据。
 - 临时照片文件名和厂家链接记录在 `docs/hardware-overview.md`；`Pictures/` 不进入版本控制。
 - Q02：仅 USB 供电条件下通过 MAVLink 读取 PX4 v1.12.3；同时发现 `SYS_AUTOSTART=1001`、`SYS_HITL=0`、MAIN 1–4/400Hz/1075–1950us。用户已确认台架逻辑映射为 `MAIN1 -> 左侧后推`、`MAIN2 -> 右侧后推`，两路使用相同基础指令；但 PX4 v1.12 文档将 1001 定义为 HIL Quadcopter X，因此通道映射不解除动力测试阻塞。完整只读记录见 `docs/hardware-overview.md`。
+- Q02（2026-09-11 当前基线）：NSH `ver all` 确认 PX4 1.17.0、提交 `d6f12ad1c4f70ad3230afd7d86e971421e02fef4`；`SYS_AUTOSTART=2100`、`SYS_HITL=0`、MAIN1/2 功能 101/102、400 Hz、disarmed 1000 µs、active 1100–1900 µs。成员 A 在 USB-only 条件下用逻辑分析仪确认双路 400 Hz/1000 µs，并分别通过 `actuator_test` 观察到目标通道 1300 µs、另一通道保持 1000 µs及约 500 ms ramp。该证据确认 Issue #9 的台架输入，不确认 PWM 电压或最终飞行几何。
 - Q04/Q05/布局：用户确认验证结构为双发后推布局，两只 ESC 同型号，并提供电池 3S1P、11.1V、100C 信息。未提供容量，故不能计算 100C 对应的理论电流；动力测试继续等待电池标签/实测与电气复核。（2026-09-02 用户补充确认容量 4000mAh，见下方记录。）
 
 ## 2026-09-02 确认/更正记录

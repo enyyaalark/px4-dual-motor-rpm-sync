@@ -1,6 +1,6 @@
 # STM32G431 固件骨架
 
-此目录包含与硬件无关、可在主机上检查的 C++17 应用层骨架、Issue #3 的最小点灯/UART 工程，以及 Issue #6 的双路霍尔捕获配置。捕获配置已于 2026-09-04 经 SWD 写入并完成 L1 UART 双路采集验证；PWM、旁路和最终整机落针仍未验证，当前工程不能作为最终控制器配置。
+此目录包含与硬件无关、可在主机上检查的 C++17 应用层、Issue #3 的最小点灯/UART 工程、Issue #6 的双路霍尔捕获，以及 Issue #9 的双路 PX4 PWM 输入。Hall 捕获已实机验证；PWM 输入已通过 CubeMX 重新生成和 Debug/Release 目标构建，但尚未烧录并做实机捕获。旁路和最终整机落针仍未验证，当前工程不能作为最终控制器配置。
 
 `rpm_sync_bringup.ioc` 是 Issue #3 专用的最小点灯/UART 配置，不是最终控制器引脚表。它只使用经 WeAct Studio V1.0 原理图和官方示例确认的板级资源：QFN48 `STM32G431CBU6`、`PC6` 用户 LED、`PA13/PA14` SWD，以及 STM32 数据手册支持的 `PA9/PA10` USART1。后续霍尔、PWM、旁路和 DMA 分配仍保持 `TBD`。
 
@@ -11,6 +11,10 @@ Issue #10 已把双路 PWM 校验通过 `pwm_output_adapter.h` 暴露给生成�
 首次只接逻辑分析仪验证。
 
 `rpm_sync_capture.ioc` 在该基线上加入 Issue #6 候选捕获：`PA0/TIM2_CH1` 和 `PA1/TIM2_CH2` 共用 1 MHz、32 位自由运行计数器，双路均为上升沿直接输入、中断捕获。数字滤波暂为 `0`，必须根据 HC14 实际波形和最高预期频率再确定。`hall_capture.c` 的中断路径只记录捕获 tick、周期和毫秒时间戳；主循环快照经 `rpm_evaluator.cpp` 薄适配层交给 C++17 的 `hall_monitor`，每秒通过 PA9 输出一次 `rpm_sync_capture,v2` 遥测，包含两路有效标志、周期（µs）、最后脉冲年龄（ms）、原始/有效 RPM 和状态。
+
+Issue #9 在同一工程中加入 `PA6/TIM3_CH1` 和 `PB6/TIM4_CH1`。每路使用独立的 1 MHz、16 位 PWM-input/reset 定时器：CH1 捕获上升沿周期，CH2 间接捕获下降沿高电平宽度。ISR 只保存固定大小快照；主循环通过 `pwm_input_evaluator.cpp` 判断 950–1950 µs 范围和 10 ms 超时，并另发 `rpm_sync_pwm_input,v1` 诊断行，不改变现有 Hall v2 或 11 字段遥测协议。闭环仍关闭。
+
+实机接线复核后可做有界采集：`python3 tools/check_pwm_input_uart.py --port <本机串口> --duration-s 30 --required-samples 10 --require-both-valid --output data/raw/<日期>/<新文件名>.txt`。工具只接受新文件名，防止覆盖原始数据。串口设备名和本机绝对路径不得提交。
 
 2026-09-10 的两电机三点标定已把 PPR 确认为 `1` 并更新集中配置。团队随后把
 `kHallTimeoutMs=100U` 和 `kMaximumRpm=3300.0F` 接受为 `MONITOR_ONLY` 实机复核所需
