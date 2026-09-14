@@ -10,7 +10,7 @@ Issue #6 的候选方案已通过成员 A 的 L0 排针可及性复核和 STM32C
 | PX4 PWM 2 | 输入 | Pixhawk MAIN2（右侧后推电机基础指令） | 已配置 `PB6 / AF2 / TIM4_CH1` | 400 Hz；监测范围 950–1950 µs；电平待测 | CubeMX/目标构建通过；排针与实机捕获待复核 |
 | ESC PWM 1 | 输出 | HCT157 B1 | 已配置 `PA8 / AF6 / TIM1_CH1` | 400 Hz；仅逻辑分析仪验证 1000/1140 µs | 待实机波形、电平和 HCT157/ESC 边界复核 |
 | ESC PWM 2 | 输出 | HCT157 B2 | 已配置 `PA10 / AF6 / TIM1_CH3` | 400 Hz；仅逻辑分析仪验证 1000/1140 µs | 待实机波形、电平和 HCT157/ESC 边界复核 |
-| Bypass select | 输出 | HCT157 S | 候选 `PB2 / GPIO` | 复位高阻，由外部电阻保证 PX4 直通 | S 极性、电平和排针待复核 |
+| Bypass select | 输出 | HCT157 S | 已配置 `PB2 / GPIO / BYPASS_SELECT` | push-pull、no pull、low speed，初始低电平；外部 10kΩ 下拉 | 需逻辑分析仪验证上电/复位低电平与 B 选择 |
 | Telemetry TX | 输出 | CH340 RXD（第一阶段） | `PA9 / USART1_TX` | 3.3V UART；仅单向连接 | Issue #3 bring-up 已实板验证，最终控制器待复核 |
 | Telemetry RX | 输入 | 第一阶段不连接 | 已配置 `PB7 / AF7 / USART1_RX`（仅满足 CubeMX Asynchronous 模式，不接线） | CH340 TXD 实测 5 V，禁止直连 | 最终控制器只发不收；bring-up `.ioc` 保持原样 |
 | Status LED | 输出 | 板载蓝色 LED | `PC6` | WeAct QFN48 V1.0，低速推挽输出 | Issue #3 bring-up 已确认 |
