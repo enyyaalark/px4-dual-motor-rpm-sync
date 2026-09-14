@@ -11,6 +11,11 @@ PWM mode 1、Active High、ARR/OC preload，初始 Pulse 为 0；`PA10` 不再�
 未接线的 `USART1_RX` 移到 `PB7`。`main.c` 提供一个仅逻辑分析仪使用的测试入口，
 显式输出约 1000 µs（CH1）和 1140 µs（CH3），不接 ESC/HCT157/电机/电池，闭环保持关闭。
 
+Issue #11 在同一工程中把 `PB2` 配置为 `BYPASS_SELECT` GPIO 输出（push-pull、no pull、
+low speed）。`MX_GPIO_Init()` 会先写输出锁存低电平再初始化，确保上电/复位期间不产生
+短高脉冲，外部 `10kΩ` 下拉继续保证 STM32 掉电/高阻时 HCT157 选择 PX4 A。测试固件
+默认不自动选择 B；`BYPASS_SELECT_TEST_ENABLE` 默认为 `0U`，置 `1` 后才周期切换 PB2。
+
 `rpm_sync_capture.ioc` 在该基线上加入 Issue #6 候选捕获：`PA0/TIM2_CH1` 和 `PA1/TIM2_CH2` 共用 1 MHz、32 位自由运行计数器，双路均为上升沿直接输入、中断捕获。数字滤波暂为 `0`，必须根据 HC14 实际波形和最高预期频率再确定。`hall_capture.c` 的中断路径只记录捕获 tick、周期和毫秒时间戳；主循环快照经 `rpm_evaluator.cpp` 薄适配层交给 C++17 的 `hall_monitor`，每秒通过 PA9 输出一次 `rpm_sync_capture,v2` 遥测，包含两路有效标志、周期（µs）、最后脉冲年龄（ms）、原始/有效 RPM 和状态。
 
 Issue #9 在同一工程中加入 `PA6/TIM3_CH1` 和 `PB6/TIM4_CH1`。每路使用独立的 1 MHz、16 位 PWM-input/reset 定时器：CH1 捕获上升沿周期，CH2 间接捕获下降沿高电平宽度。ISR 只保存固定大小快照；主循环通过 `pwm_input_evaluator.cpp` 判断 950–1950 µs 范围和 10 ms 超时，并另发 `rpm_sync_pwm_input,v1` 诊断行，不改变现有 Hall v2 或 11 字段遥测协议。闭环仍关闭。

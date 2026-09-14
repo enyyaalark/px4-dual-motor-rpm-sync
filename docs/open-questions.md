@@ -10,7 +10,7 @@
 | Q04 | 两只 ESC 已确认为相同的 Flycolor `Raptor5 G071-35A`，固件标识均为 `Flycolor_Raptor_5`（用户确认）；固件版本号、配置、3.3V 接受度和失联行为仍待确认 | 决定 PWM 范围、刷新率和安全行为 | role:hardware | PWM 输出/安全 |
 | Q05 | 电池已确认为 3S1P，用户确认额定 11.1V、4000mAh、100C；化学体系、满充/当前实测电压、连接器和线规仍待确认 | 容量与 C 倍率共同决定理论电流；实测电压和连接决定动力风险与降压设计 | role:hardware | 带电机测试 |
 | Q06 | 螺旋桨尺寸与旋向 | 决定负载和机械安全 | role:hardware | 带桨测试 |
-| Q07 | Hall 捕获 `PA0/PA1 + TIM2_CH1/CH2` 已实机验证；PWM 输入 `PA6/TIM3_CH1 + PB6/TIM4_CH1` 已实机静态采集；TIM1 双路 PWM 输出 `PA8/TIM1_CH1 + PA10/TIM1_CH3` 已通过 CubeMX 6.18.1 生成和 Debug/Release 目标构建，但尚未接逻辑分析仪实机验证。旁路及最终整机资源仍待验证 | 决定完整 CubeMX 工程与布线 | role:firmware | TIM1 输出实机波形、旁路集成 |
+| Q07 | Hall 捕获 `PA0/PA1 + TIM2_CH1/CH2` 已实机验证；PWM 输入 `PA6/TIM3_CH1 + PB6/TIM4_CH1` 已实机静态采集；TIM1 双路 PWM 输出 `PA8/TIM1_CH1 + PA10/TIM1_CH3` 已通过逻辑分析仪实机验证；旁路选择 `PB2/GPIO` 已配置为初始低电平、仅逻辑分析仪测试入口可切换。HCT157 旁路及最终整机资源仍待验证 | 决定完整 CubeMX 工程与布线 | role:firmware | HCT157 旁路与整机集成 |
 | Q08 | 独立激光转速计型号/可用性 | PPR 和 3% 误差目标需要参考 | 两人共同 | M1 标定 |
 | Q09 | HCT157/HC14 实物厂商与供电方案 | 电平阈值和绝对额定值必须按数据手册确认 | role:hardware | 逻辑电路上电 |
 | Q10 | 刚性台架、防护罩和急停方案 | 带桨测试的前置安全条件 | 两人共同 | M3 带桨测试 |

@@ -44,6 +44,8 @@
 #define STATUS_LED_PERIOD_MS 500U
 #define TELEMETRY_PERIOD_MS 1000U
 #define TELEMETRY_TIMEOUT_MS 20U
+#define BYPASS_SELECT_TEST_ENABLE 0U
+#define BYPASS_SELECT_TEST_PERIOD_MS 2000U
 
 /* USER CODE END PD */
 
@@ -58,6 +60,7 @@
 
 static uint32_t last_led_tick_ms;
 static uint32_t last_telemetry_tick_ms;
+static uint32_t last_bypass_tick_ms;
 static HallCaptureSnapshot hall_snapshots[2];
 static RpmEvaluationResult rpm_results[2];
 static PwmInputCaptureSnapshot pwm_input_snapshots[2];
@@ -118,6 +121,7 @@ int main(void)
 
   last_led_tick_ms = HAL_GetTick();
   last_telemetry_tick_ms = last_led_tick_ms;
+  last_bypass_tick_ms = last_led_tick_ms;
   (void)HAL_UART_Transmit(&huart1,
                          (uint8_t *)telemetry_heartbeat,
                          sizeof(telemetry_heartbeat) - 1U,
@@ -166,6 +170,16 @@ int main(void)
       last_led_tick_ms = now_ms;
       HAL_GPIO_TogglePin(STATUS_LED_GPIO_Port, STATUS_LED_Pin);
     }
+
+#if BYPASS_SELECT_TEST_ENABLE
+    /* Logic-analyzer-only bypass-select exercise. Disabled by default so
+       PB2 stays low and the external HCT157 keeps selecting PX4 A inputs. */
+    if ((now_ms - last_bypass_tick_ms) >= BYPASS_SELECT_TEST_PERIOD_MS)
+    {
+      last_bypass_tick_ms = now_ms;
+      HAL_GPIO_TogglePin(BYPASS_SELECT_GPIO_Port, BYPASS_SELECT_Pin);
+    }
+#endif
 
     if ((now_ms - last_telemetry_tick_ms) >= TELEMETRY_PERIOD_MS)
     {

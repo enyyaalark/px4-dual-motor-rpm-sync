@@ -148,6 +148,17 @@ class Stm32CaptureConfigTests(unittest.TestCase):
         )
         self.assertIn("TIM_OCMODE_PWM1", ioc["TIM1.OCMode_PWM-PWM\\ Generation1\\ CH1"])
 
+    def test_pb2_bypass_select_is_low_by_default(self):
+        ioc = load_ioc()
+        gpio_c = (STM32 / "Src" / "gpio.c").read_text()
+        main_c = (STM32 / "Src" / "main.c").read_text()
+
+        self.assertEqual("GPIO_Output", ioc["PB2.Signal"])
+        self.assertEqual("BYPASS_SELECT", ioc["PB2.GPIO_Label"])
+        self.assertEqual("GPIO_PIN_RESET", ioc["PB2.PinState"])
+        self.assertIn("HAL_GPIO_WritePin(BYPASS_SELECT_GPIO_Port, BYPASS_SELECT_Pin, GPIO_PIN_RESET)", gpio_c)
+        self.assertIn("BYPASS_SELECT_TEST_ENABLE 0U", main_c)
+
     def test_team_accepted_monitor_only_rpm_configuration_stays_closed_loop_off(self):
         config = (STM32 / "App" / "app_config.hpp").read_text()
 
