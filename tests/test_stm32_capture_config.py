@@ -129,14 +129,24 @@ class Stm32CaptureConfigTests(unittest.TestCase):
         self.assertIn("kPwmInputTimeoutMs = 10U", config)
         self.assertIn("kSyncControlDefaultOn = false", config)
 
-    def test_cpp_pwm_output_adapter_is_linked_but_timer_is_not_guessed(self):
+    def test_cpp_pwm_output_adapter_and_tim1_dual_pwm_output_are_configured(self):
         project = (STM32 / "STM32CubeIDE" / ".project").read_text()
         ioc = load_ioc()
 
         self.assertIn("Application/User/pwm_output_adapter.cpp", project)
         self.assertIn("Application/User/pwm_output.cpp", project)
-        self.assertNotIn("TIM1", ioc.get("Mcu.IP0", ""))
-        self.assertNotIn("S_TIM1", "\n".join(f"{key}={value}" for key, value in ioc.items()))
+        self.assertEqual("TIM1", ioc["Mcu.IP7"])
+        self.assertEqual("S_TIM1_CH1", ioc["PA8.Signal"])
+        self.assertEqual("ESC1_PWM_OUT", ioc["PA8.GPIO_Label"])
+        self.assertEqual("S_TIM1_CH3", ioc["PA10.Signal"])
+        self.assertEqual("ESC2_PWM_OUT", ioc["PA10.GPIO_Label"])
+        self.assertEqual("15", ioc["TIM1.Prescaler"])
+        self.assertEqual("2499", ioc["TIM1.Period"])
+        self.assertEqual(
+            "TIM_AUTORELOAD_PRELOAD_ENABLE",
+            ioc["TIM1.AutoReloadPreload"],
+        )
+        self.assertIn("TIM_OCMODE_PWM1", ioc["TIM1.OCMode_PWM-PWM\\ Generation1\\ CH1"])
 
     def test_team_accepted_monitor_only_rpm_configuration_stays_closed_loop_off(self):
         config = (STM32 / "App" / "app_config.hpp").read_text()

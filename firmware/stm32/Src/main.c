@@ -113,6 +113,7 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM4_Init();
   MX_USART1_UART_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 
   last_led_tick_ms = HAL_GetTick();
@@ -128,6 +129,23 @@ int main(void)
   }
 
   if (PwmInputCapture_Start(&htim3, &htim4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* Logic-analyzer-only TIM1 dual PWM output entry (Issue #10).
+     ESC/HCT157/motor/battery are disconnected and closed loop is off.
+     Both channels share TIM1's single update event; OC preload is enabled
+     so the compare values below take effect at the next update event. */
+  __HAL_TIM_ENABLE_OCxPRELOAD(&htim1, TIM_CHANNEL_1);
+  __HAL_TIM_ENABLE_OCxPRELOAD(&htim1, TIM_CHANNEL_3);
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 1000U);
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 1140U);
+  if (HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
   }
