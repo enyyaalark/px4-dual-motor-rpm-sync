@@ -26,6 +26,8 @@
 /* USER CODE BEGIN Includes */
 
 #include "hall_capture.h"
+#include "pwm_input_capture.h"
+#include "pwm_input_evaluator.h"
 #include "rpm_evaluator.h"
 #include <stdio.h>
 
@@ -58,7 +60,10 @@ static uint32_t last_led_tick_ms;
 static uint32_t last_telemetry_tick_ms;
 static HallCaptureSnapshot hall_snapshots[2];
 static RpmEvaluationResult rpm_results[2];
+static PwmInputCaptureSnapshot pwm_input_snapshots[2];
+static PwmInputEvaluationResult pwm_input_results[2];
 static uint8_t capture_telemetry[320];
+static uint8_t pwm_input_telemetry[320];
 static const uint8_t telemetry_heartbeat[] =
   "rpm_sync_bringup,v1,board=weact_g431_qfn48,mode=MONITOR_ONLY\r\n";
 
@@ -105,6 +110,8 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM2_Init();
+  MX_TIM3_Init();
+  MX_TIM4_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
@@ -116,6 +123,11 @@ int main(void)
                          TELEMETRY_TIMEOUT_MS);
 
   if (HallCapture_Start(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  if (PwmInputCapture_Start(&htim3, &htim4) != HAL_OK)
   {
     Error_Handler();
   }
@@ -141,6 +153,7 @@ int main(void)
     {
       last_telemetry_tick_ms = now_ms;
       HallCapture_Read(hall_snapshots);
+      const uint32_t hall_now_ms = HAL_GetTick();
       for (uint32_t channel = 0U; channel < 2U; ++channel)
       {
         const RpmEvaluationInput input = {
@@ -149,7 +162,8 @@ int main(void)
           hall_snapshots[channel].has_pulse,
           hall_snapshots[channel].has_period
         };
-        rpm_results[channel] = RpmEvaluator_EvaluateConfigured(&input, now_ms);
+        rpm_results[channel] =
+          RpmEvaluator_EvaluateConfigured(&input, hall_now_ms);
       }
       const int telemetry_length = snprintf(
         (char *)capture_telemetry,
@@ -158,16 +172,16 @@ int main(void)
         "ch1_age_ms=%lu,ch1_raw_rpm=%lu,ch1_rpm=%lu,ch1_status=%s,"
         "ch2_valid=%u,ch2_period_us=%lu,ch2_age_ms=%lu,ch2_raw_rpm=%lu,"
         "ch2_rpm=%lu,ch2_status=%s\r\n",
-        (unsigned long)now_ms,
+        (unsigned long)hall_now_ms,
         (unsigned int)hall_snapshots[0].has_period,
         (unsigned long)rpm_results[0].period_ticks,
-        (unsigned long)(now_ms - hall_snapshots[0].last_pulse_ms),
+        (unsigned long)(hall_now_ms - hall_snapshots[0].last_pulse_ms),
         (unsigned long)rpm_results[0].raw_rpm,
         (unsigned long)rpm_results[0].rpm,
         RpmEvaluator_StatusName(rpm_results[0].status),
         (unsigned int)hall_snapshots[1].has_period,
         (unsigned long)rpm_results[1].period_ticks,
-        (unsigned long)(now_ms - hall_snapshots[1].last_pulse_ms),
+        (unsigned long)(hall_now_ms - hall_snapshots[1].last_pulse_ms),
         (unsigned long)rpm_results[1].raw_rpm,
         (unsigned long)rpm_results[1].rpm,
         RpmEvaluator_StatusName(rpm_results[1].status));
@@ -178,6 +192,51 @@ int main(void)
         (void)HAL_UART_Transmit(&huart1,
                                capture_telemetry,
                                (uint16_t)telemetry_length,
+                               TELEMETRY_TIMEOUT_MS);
+      }
+
+      PwmInputCapture_Read(pwm_input_snapshots);
+      const uint32_t pwm_input_now_ms = HAL_GetTick();
+      for (uint32_t channel = 0U; channel < 2U; ++channel)
+      {
+        const PwmInputEvaluationInput input = {
+          pwm_input_snapshots[channel].pulse_width_us,
+          pwm_input_snapshots[channel].last_update_ms,
+          pwm_input_snapshots[channel].has_sample
+        };
+        pwm_input_results[channel] =
+          PwmInputEvaluator_EvaluateConfigured(&input, pwm_input_now_ms);
+      }
+      const int pwm_input_telemetry_length = snprintf(
+        (char *)pwm_input_telemetry,
+        sizeof(pwm_input_telemetry),
+        "rpm_sync_pwm_input,v1,t_ms=%lu,"
+        "ch1_seen=%u,ch1_period_us=%lu,ch1_raw_us=%u,ch1_us=%u,"
+        "ch1_age_ms=%lu,ch1_status=%s,"
+        "ch2_seen=%u,ch2_period_us=%lu,ch2_raw_us=%u,ch2_us=%u,"
+        "ch2_age_ms=%lu,ch2_status=%s\r\n",
+        (unsigned long)pwm_input_now_ms,
+        (unsigned int)pwm_input_snapshots[0].has_sample,
+        (unsigned long)pwm_input_snapshots[0].period_us,
+        (unsigned int)pwm_input_results[0].raw_pulse_width_us,
+        (unsigned int)pwm_input_results[0].pulse_width_us,
+        (unsigned long)(pwm_input_now_ms -
+                        pwm_input_snapshots[0].last_update_ms),
+        PwmInputEvaluator_StatusName(pwm_input_results[0].status),
+        (unsigned int)pwm_input_snapshots[1].has_sample,
+        (unsigned long)pwm_input_snapshots[1].period_us,
+        (unsigned int)pwm_input_results[1].raw_pulse_width_us,
+        (unsigned int)pwm_input_results[1].pulse_width_us,
+        (unsigned long)(pwm_input_now_ms -
+                        pwm_input_snapshots[1].last_update_ms),
+        PwmInputEvaluator_StatusName(pwm_input_results[1].status));
+
+      if ((pwm_input_telemetry_length > 0) &&
+          ((size_t)pwm_input_telemetry_length < sizeof(pwm_input_telemetry)))
+      {
+        (void)HAL_UART_Transmit(&huart1,
+                               pwm_input_telemetry,
+                               (uint16_t)pwm_input_telemetry_length,
                                TELEMETRY_TIMEOUT_MS);
       }
     }
@@ -230,6 +289,7 @@ void SystemClock_Config(void)
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim)
 {
   HallCapture_OnInterrupt(htim);
+  PwmInputCapture_OnInterrupt(htim);
 }
 
 /* USER CODE END 4 */

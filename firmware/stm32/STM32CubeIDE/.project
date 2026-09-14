@@ -52,6 +52,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Src/hall_capture.c</locationURI>
 		</link>
 		<link>
+			<name>Application/User/pwm_input_capture.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Src/pwm_input_capture.c</locationURI>
+		</link>
+		<link>
 			<name>Application/User/main.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Src/main.c</locationURI>
@@ -60,6 +65,16 @@
 			<name>Application/User/rpm_evaluator.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/App/rpm_evaluator.cpp</locationURI>
+		</link>
+		<link>
+			<name>Application/User/pwm_input_evaluator.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/App/pwm_input_evaluator.cpp</locationURI>
+		</link>
+		<link>
+			<name>Application/User/pwm_input.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/App/pwm_input.cpp</locationURI>
 		</link>
 		<link>
 			<name>Application/User/pwm_output_adapter.cpp</name>

@@ -38,6 +38,30 @@ class Stm32CaptureConfigTests(unittest.TestCase):
             self.assertEqual("0", ioc[f"TIM2.ICFilter_CH{channel}"])
         self.assertIn("true", ioc["NVIC.TIM2_IRQn"])
 
+    def test_dual_px4_pwm_inputs_use_independent_one_megahertz_timers(self):
+        ioc = load_ioc()
+
+        self.assertEqual("S_TIM3_CH1", ioc["PA6.Signal"])
+        self.assertEqual("PX4_PWM1_CAPTURE", ioc["PA6.GPIO_Label"])
+        self.assertEqual("S_TIM4_CH1", ioc["PB6.Signal"])
+        self.assertEqual("PX4_PWM2_CAPTURE", ioc["PB6.GPIO_Label"])
+        for timer in ("TIM3", "TIM4"):
+            self.assertEqual("15", ioc[f"{timer}.Prescaler"])
+            self.assertEqual("65535", ioc[f"{timer}.Period"])
+            self.assertEqual("TIM_SLAVEMODE_RESET", ioc[f"{timer}.SlaveMode"])
+            self.assertEqual("TIM_TS_TI1FP1", ioc[f"{timer}.TriggerSource"])
+            self.assertEqual(
+                "TIM_INPUTCHANNELPOLARITY_RISING",
+                ioc[f"{timer}.ICPolarity_CH1"],
+            )
+            self.assertEqual(
+                "TIM_INPUTCHANNELPOLARITY_FALLING",
+                ioc[f"{timer}.ICPolarity_CH2"],
+            )
+            self.assertEqual("0", ioc[f"{timer}.ICFilter_CH1"])
+            self.assertEqual("0", ioc[f"{timer}.ICFilter_CH2"])
+            self.assertIn("true", ioc[f"NVIC.{timer}_IRQn"])
+
     def test_interrupt_path_is_bounded_and_starts_both_channels(self):
         source = (STM32 / "Src" / "hall_capture.c").read_text()
 
@@ -58,6 +82,30 @@ class Stm32CaptureConfigTests(unittest.TestCase):
         self.assertIn("rpm_sync_capture,v2", main_source)
         self.assertNotIn("HAL_UART_Transmit", interrupt_source)
 
+    def test_pwm_capture_interrupt_is_bounded_and_telemetry_is_main_loop_only(self):
+        capture_source = (STM32 / "Src" / "pwm_input_capture.c").read_text()
+        main_source = (STM32 / "Src" / "main.c").read_text()
+
+        self.assertIn("HAL_TIM_IC_Start_IT(htim, TIM_CHANNEL_1)", capture_source)
+        self.assertIn("HAL_TIM_IC_Start(htim, TIM_CHANNEL_2)", capture_source)
+        self.assertNotIn("HAL_TIM_IC_Start_IT(htim, TIM_CHANNEL_2)", capture_source)
+        self.assertIn("HAL_TIM_ReadCapturedValue", capture_source)
+        self.assertNotIn("HAL_UART_Transmit", capture_source)
+        self.assertNotIn("while (", capture_source)
+        self.assertIn("PwmInputCapture_Read(pwm_input_snapshots)", main_source)
+        self.assertIn("PwmInputEvaluator_EvaluateConfigured", main_source)
+        self.assertIn("rpm_sync_pwm_input,v1", main_source)
+
+    def test_capture_snapshots_are_taken_before_evaluation_timestamps(self):
+        main_source = (STM32 / "Src" / "main.c").read_text()
+
+        hall_snapshot = main_source.index("HallCapture_Read(hall_snapshots)")
+        hall_now = main_source.index("const uint32_t hall_now_ms = HAL_GetTick()")
+        pwm_snapshot = main_source.index("PwmInputCapture_Read(pwm_input_snapshots)")
+        pwm_now = main_source.index("const uint32_t pwm_input_now_ms = HAL_GetTick()")
+        self.assertLess(hall_snapshot, hall_now)
+        self.assertLess(pwm_snapshot, pwm_now)
+
     def test_cpp_rpm_adapter_is_linked_into_target_project(self):
         project = (STM32 / "STM32CubeIDE" / ".project").read_text()
 
@@ -65,6 +113,21 @@ class Stm32CaptureConfigTests(unittest.TestCase):
         self.assertIn("Application/User/rpm_evaluator.cpp", project)
         self.assertIn("Application/User/rpm_capture.cpp", project)
         self.assertIn("Application/User/hall_monitor.cpp", project)
+
+    def test_cpp_pwm_input_adapter_is_linked_into_target_project(self):
+        project = (STM32 / "STM32CubeIDE" / ".project").read_text()
+
+        self.assertIn("Application/User/pwm_input_capture.c", project)
+        self.assertIn("Application/User/pwm_input_evaluator.cpp", project)
+        self.assertIn("Application/User/pwm_input.cpp", project)
+
+    def test_monitor_only_pwm_input_configuration_is_explicit(self):
+        config = (STM32 / "App" / "app_config.hpp").read_text()
+
+        self.assertIn("kPwmInputMinUs = 950U", config)
+        self.assertIn("kPwmInputMaxUs = 1'950U", config)
+        self.assertIn("kPwmInputTimeoutMs = 10U", config)
+        self.assertIn("kSyncControlDefaultOn = false", config)
 
     def test_cpp_pwm_output_adapter_is_linked_but_timer_is_not_guessed(self):
         project = (STM32 / "STM32CubeIDE" / ".project").read_text()

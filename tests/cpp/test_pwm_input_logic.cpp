@@ -127,14 +127,18 @@ bool testInvalidConfigurations() {
                   "invalid configurations must output zero effective width");
 }
 
-bool testUncalibratedDefaultsRemainInvalid() {
+bool testMeasuredMonitorOnlyDefaultsAreValid() {
     const PwmInputConfig defaults{
         rpm_sync::config::kPwmInputMinUs,
         rpm_sync::config::kPwmInputMaxUs,
         rpm_sync::config::kPwmInputTimeoutMs,
     };
-    return expect(!rpm_sync::pwmInputConfigValid(defaults),
-                  "uncalibrated project defaults must not enable PWM input");
+    return expect(rpm_sync::pwmInputConfigValid(defaults),
+                  "measured MONITOR_ONLY defaults must enable PWM validation") &&
+           expect(defaults.minimum_us == 950U &&
+                      defaults.maximum_us == 1'950U &&
+                      defaults.timeout_ms == 10U,
+                  "project PWM bounds must match the reviewed Issue 9 values");
 }
 
 bool testResetClearsSample() {
@@ -162,7 +166,7 @@ int main() {
     passed = testOutOfRangeIsIsolated() && passed;
     passed = testTimeoutAcrossMillisecondWrap() && passed;
     passed = testInvalidConfigurations() && passed;
-    passed = testUncalibratedDefaultsRemainInvalid() && passed;
+    passed = testMeasuredMonitorOnlyDefaultsAreValid() && passed;
     passed = testResetClearsSample() && passed;
     if (!passed) {
         return 1;
