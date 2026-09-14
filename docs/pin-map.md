@@ -6,7 +6,7 @@ Issue #6 的候选方案已通过成员 A 的 L0 排针可及性复核和 STM32C
 |---|---|---|---|---|---|
 | Hall 1 capture | 输入 | 第一颗 HC14 `1Y` | `PA0 / AF1 / TIM2_CH1` | 3.3 V 整形输出；上升沿捕获 | L0 可及性、CubeMX、物理接线与 UART 采集已验证；最高实际频率待 Issue #8 验证 |
 | Hall 2 capture | 输入 | 第二颗 HC14 `1Y` | `PA1 / AF1 / TIM2_CH2` | 3.3 V 整形输出；上升沿捕获 | L0 可及性、CubeMX、物理接线与 UART 采集已验证；最高实际频率待 Issue #8 验证 |
-| PX4 PWM 1 | 输入 | Pixhawk MAIN1（左侧后推电机基础指令） | 已配置 `PA6 / AF2 / TIM3_CH1` | 400 Hz；监测范围 950–1950 µs；电平待测 | CubeMX/目标构建通过；排针与实机捕获待复核 |
+| PX4 PWM 1 | 输入 | Pixhawk MAIN1（左侧后推电机基础指令） | 已配置 `PB4 / AF2 / TIM3_CH1` | 400 Hz；监测范围 950–1950 µs；电平待测 | CubeMX/目标构建通过；实机双路捕获已通过 |
 | PX4 PWM 2 | 输入 | Pixhawk MAIN2（右侧后推电机基础指令） | 已配置 `PB6 / AF2 / TIM4_CH1` | 400 Hz；监测范围 950–1950 µs；电平待测 | CubeMX/目标构建通过；排针与实机捕获待复核 |
 | ESC PWM 1 | 输出 | HCT157 B1 | 已配置 `PA8 / AF6 / TIM1_CH1` | 400 Hz；仅逻辑分析仪验证 1000/1140 µs | 待实机波形、电平和 HCT157/ESC 边界复核 |
 | ESC PWM 2 | 输出 | HCT157 B2 | 已配置 `PA10 / AF6 / TIM1_CH3` | 400 Hz；仅逻辑分析仪验证 1000/1140 µs | 待实机波形、电平和 HCT157/ESC 边界复核 |
