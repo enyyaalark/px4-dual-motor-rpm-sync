@@ -1,14 +1,15 @@
 # STM32G431 固件骨架
 
-此目录包含与硬件无关、可在主机上检查的 C++17 应用层、Issue #3 的最小点灯/UART 工程、Issue #6 的双路霍尔捕获，以及 Issue #9 的双路 PX4 PWM 输入。Hall 捕获已实机验证；PWM 输入已通过 CubeMX 重新生成和 Debug/Release 目标构建，但尚未烧录并做实机捕获。旁路和最终整机落针仍未验证，当前工程不能作为最终控制器配置。
+此目录包含与硬件无关、可在主机上检查的 C++17 应用层、Issue #3 的最小点灯/UART 工程、Issue #6 的双路霍尔捕获、Issue #9 的双路 PX4 PWM 输入，以及 Issue #10 的 TIM1 双路 PWM 输出。Hall 捕获已实机验证；PWM 输入已实机静态采集；TIM1 输出已通过 CubeMX 重新生成和 Debug/Release 目标构建，但尚未接逻辑分析仪实机验证。旁路和最终整机落针仍未验证，当前工程不能作为最终控制器配置。
 
 `rpm_sync_bringup.ioc` 是 Issue #3 专用的最小点灯/UART 配置，不是最终控制器引脚表。它只使用经 WeAct Studio V1.0 原理图和官方示例确认的板级资源：QFN48 `STM32G431CBU6`、`PC6` 用户 LED、`PA13/PA14` SWD，以及 STM32 数据手册支持的 `PA9/PA10` USART1。后续霍尔、PWM、旁路和 DMA 分配仍保持 `TBD`。
 
 Issue #10 已把双路 PWM 校验通过 `pwm_output_adapter.h` 暴露给生成的 C/HAL 层，并把
-实现链接进目标工程。由于 ESC 实测刷新频率和输出边界仍为 `TBD`，
-`rpm_sync_capture.ioc` 不配置 TIM1，目标默认配置返回 `INVALID_CONFIG`，不得启动输出。
-取得参数后才可按 `docs/pin-map.md` 的候选 PA8/TIM1_CH1、PA10/TIM1_CH3 生成配置，
-首次只接逻辑分析仪验证。
+实现链接进目标工程。按成员 A 2026-09-14 的配置同步，`rpm_sync_capture.ioc` 现在把
+`PA8/TIM1_CH1` 和 `PA10/TIM1_CH3` 配置为 1 MHz（Prescaler 15）、Period 2499（400 Hz）、
+PWM mode 1、Active High、ARR/OC preload，初始 Pulse 为 0；`PA10` 不再作为 USART1_RX，
+未接线的 `USART1_RX` 移到 `PB7`。`main.c` 提供一个仅逻辑分析仪使用的测试入口，
+显式输出约 1000 µs（CH1）和 1140 µs（CH3），不接 ESC/HCT157/电机/电池，闭环保持关闭。
 
 `rpm_sync_capture.ioc` 在该基线上加入 Issue #6 候选捕获：`PA0/TIM2_CH1` 和 `PA1/TIM2_CH2` 共用 1 MHz、32 位自由运行计数器，双路均为上升沿直接输入、中断捕获。数字滤波暂为 `0`，必须根据 HC14 实际波形和最高预期频率再确定。`hall_capture.c` 的中断路径只记录捕获 tick、周期和毫秒时间戳；主循环快照经 `rpm_evaluator.cpp` 薄适配层交给 C++17 的 `hall_monitor`，每秒通过 PA9 输出一次 `rpm_sync_capture,v2` 遥测，包含两路有效标志、周期（µs）、最后脉冲年龄（ms）、原始/有效 RPM 和状态。
 

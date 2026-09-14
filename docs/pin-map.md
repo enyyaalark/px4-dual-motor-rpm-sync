@@ -1,6 +1,6 @@
 # 引脚映射（Issue #6 捕获 L1 UART 采集已验证，整机方案仍待验证）
 
-Issue #6 的候选方案已通过成员 A 的 L0 排针可及性复核和 STM32CubeMX 6.18.1 生成检查。双路 Hall 与双路 PX4 PWM 输入配置已落入 `rpm_sync_capture.ioc`；PWM 输入尚待实机捕获，PWM 输出、旁路及最终整机落针仍须各自完成电气和实机验证，因此本表不代表完整控制器已经定版。
+Issue #6 的候选方案已通过成员 A 的 L0 排针可及性复核和 STM32CubeMX 6.18.1 生成检查。双路 Hall、双路 PX4 PWM 输入与双路 TIM1 PWM 输出配置已落入 `rpm_sync_capture.ioc`；PWM 输入已实机静态采集，PWM 输出仅通过 CubeMX 生成与 Debug/Release 目标构建、尚未接逻辑分析仪实机验证，旁路及最终整机落针仍须各自完成电气和实机验证，因此本表不代表完整控制器已经定版。
 
 | 功能 | 方向 | 外部信号 | STM32 定时器/GPIO | 电气要求 | 状态 |
 |---|---|---|---|---|---|
@@ -8,11 +8,11 @@ Issue #6 的候选方案已通过成员 A 的 L0 排针可及性复核和 STM32C
 | Hall 2 capture | 输入 | 第二颗 HC14 `1Y` | `PA1 / AF1 / TIM2_CH2` | 3.3 V 整形输出；上升沿捕获 | L0 可及性、CubeMX、物理接线与 UART 采集已验证；最高实际频率待 Issue #8 验证 |
 | PX4 PWM 1 | 输入 | Pixhawk MAIN1（左侧后推电机基础指令） | 已配置 `PA6 / AF2 / TIM3_CH1` | 400 Hz；监测范围 950–1950 µs；电平待测 | CubeMX/目标构建通过；排针与实机捕获待复核 |
 | PX4 PWM 2 | 输入 | Pixhawk MAIN2（右侧后推电机基础指令） | 已配置 `PB6 / AF2 / TIM4_CH1` | 400 Hz；监测范围 950–1950 µs；电平待测 | CubeMX/目标构建通过；排针与实机捕获待复核 |
-| ESC PWM 1 | 输出 | HCT157 B1 | 候选 `PA8 / AF6 / TIM1_CH1` | 实际范围和频率 `TBD` | 待排针、波形与 ESC 边界复核 |
-| ESC PWM 2 | 输出 | HCT157 B2 | 候选 `PA10 / AF6 / TIM1_CH3` | 实际范围和频率 `TBD` | 待排针、波形与 ESC 边界复核 |
+| ESC PWM 1 | 输出 | HCT157 B1 | 已配置 `PA8 / AF6 / TIM1_CH1` | 400 Hz；仅逻辑分析仪验证 1000/1140 µs | 待实机波形、电平和 HCT157/ESC 边界复核 |
+| ESC PWM 2 | 输出 | HCT157 B2 | 已配置 `PA10 / AF6 / TIM1_CH3` | 400 Hz；仅逻辑分析仪验证 1000/1140 µs | 待实机波形、电平和 HCT157/ESC 边界复核 |
 | Bypass select | 输出 | HCT157 S | 候选 `PB2 / GPIO` | 复位高阻，由外部电阻保证 PX4 直通 | S 极性、电平和排针待复核 |
 | Telemetry TX | 输出 | CH340 RXD（第一阶段） | `PA9 / USART1_TX` | 3.3V UART；仅单向连接 | Issue #3 bring-up 已实板验证，最终控制器待复核 |
-| Telemetry RX | 输入 | 第一阶段不连接 | 不分配；候选方案将 `PA10` 用于 `TIM1_CH3` | CH340 TXD 实测 5 V，禁止直连 | 最终控制器不启用 RX；bring-up `.ioc` 保持原样 |
+| Telemetry RX | 输入 | 第一阶段不连接 | 已配置 `PB7 / AF7 / USART1_RX`（仅满足 CubeMX Asynchronous 模式，不接线） | CH340 TXD 实测 5 V，禁止直连 | 最终控制器只发不收；bring-up `.ioc` 保持原样 |
 | Status LED | 输出 | 板载蓝色 LED | `PC6` | WeAct QFN48 V1.0，低速推挽输出 | Issue #3 bring-up 已确认 |
 
 ## 定时器资源与理由
@@ -22,7 +22,7 @@ Issue #6 的候选方案已通过成员 A 的 L0 排针可及性复核和 STM32C
 | `TIM2` | Hall 1/2 上升沿捕获 | CubeMX 配置为 1 MHz 自由运行、32 位递增计数 | 两路共享同一时间基准；1 µs/tick 时约 71.6 分钟回绕，应用层按无符号 32 位差值处理单次回绕 | 实机 tick/波形对照、输入滤波、最大脉冲频率和中断负载 |
 | `TIM3` | PX4 PWM 1 测量 | 已配置 1 MHz；PWM input/reset mode | 每路 PWM 独占一个定时器，避免两路信号争用同一 slave-reset 时间基准 | STM32 实机周期/脉宽、丢失和越界行为 |
 | `TIM4` | PX4 PWM 2 测量 | 与 TIM3 相同 | 与 MAIN1 独立测量，可分别检测超时和越界 | 同上 |
-| `TIM1` | ESC PWM 1/2 输出 | 候选 1 MHz；CH1/CH3 preload，同一 update event 生效 | 两路共享周期计数器并同步更新；最终周期和限幅等待 ESC 实测 | 启动/复位瞬态、输出电平、频率、脉宽和 HCT157 波形 |
+| `TIM1` | ESC PWM 1/2 输出 | 已配置 1 MHz、Prescaler 15、Period 2499（400 Hz）；CH1/CH3 PWM mode 1、OC preload、ARR preload | 两路共享周期计数器并同步更新；本轮仅逻辑分析仪验证 1100–1140 µs | 启动/复位瞬态、输出电平、频率、脉宽和 HCT157 波形 |
 
 ## Issue #6 实际 Hall 接线
 
@@ -35,7 +35,7 @@ Issue #6 的候选方案已通过成员 A 的 L0 排针可及性复核和 STM32C
 
 两颗芯片的独立 RC 网络、3.3 V 供电、100 nF 退耦和共地已由成员 A 复核。门编号变化不改变 STM32 引脚或固件通道映射；双路捕获已通过 SWD 下载固件与 UART 采集验证。项目负责人取消单独的手动周期对照，最高预期频率与滤波结论转交 Issue #8。
 
-`PA11/PA12` 保留给板载 USB/ROM DFU 路径，不用于控制输出；`PA13/PA14` 始终保留 SWD；`PA9` 保留单向遥测；`PC6` 保留状态灯。`PA10` 在 Issue #3 bring-up 工程中仍是未接线的 USART1_RX，但第一阶段最终控制器不需要 RX，因此候选方案可将其改作 `TIM1_CH3`。这不授权连接 CH340 TXD。
+`PA11/PA12` 保留给板载 USB/ROM DFU 路径，不用于控制输出；`PA13/PA14` 始终保留 SWD；`PA9` 保留单向遥测；`PC6` 保留状态灯。`PA10` 已改为 `TIM1_CH3`，未接线的 `USART1_RX` 移到 `PB7` 以保持 CubeMX Asynchronous 模式。这不授权连接 CH340 TXD 或任何 RX 线路。
 
 ## HAL 捕获边界
 

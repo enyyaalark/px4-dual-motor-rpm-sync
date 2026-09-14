@@ -6,6 +6,8 @@
 
 ### Added
 
+- 2026-09-14：Issue #10 按成员 A 的配置同步在 `rpm_sync_capture.ioc` 加入 TIM1 双路 PWM 输出：`PA8/TIM1_CH1`、`PA10/TIM1_CH3`，1 MHz、Prescaler 15、Period 2499（400 Hz）、PWM mode 1、Active High、ARR/OC preload，初始 Pulse 0；`PA10` 脱离 USART1_RX，未接线的 `USART1_RX` 移到 `PB7`，`PA9` 保持遥测 TX。`main.c` 增加仅逻辑分析仪使用的测试入口（约 1000/1140 µs，同一 update event）。CubeMX 6.18.1 重新生成，Debug/Release 目标构建 0 errors/0 warnings，57/57 主机测试通过；尚未接逻辑分析仪实机验证，ESC/HCT157/电机/电池保持断开，闭环关闭。
+
 - 2026-09-11：Issue #9 将 PX4 MAIN1/2 接入 PA6/TIM3_CH1 与 PB6/TIM4_CH1 独立 PWM-input/reset 捕获，增加有界 ISR 快照、C++17 范围/超时评估、版本化 UART 诊断和严格采集工具；CubeMX 临时副本重新生成、Debug/Release 目标构建及主机测试通过。950–1950 µs/10 ms 仅为 `MONITOR_ONLY` 初值，STM32 实机捕获和信号电平仍待验证，闭环保持关闭。
 - 2026-09-11：Issue #9 首次实机 UART 检查测得双路约 2500 µs 周期和 999–1000 µs 高电平，同时暴露主循环时间早于中断快照的竞态；调整为先原子读取捕获快照、再获取评估时间，避免约 18 ms 的未来时间戳被无符号回绕误判为超时。
 
