@@ -95,13 +95,13 @@ bool testInvalidRequestRejectsWholePair() {
                   "one invalid request must reject the complete output pair");
 }
 
-bool testUncalibratedDefaultsRemainInvalid() {
+bool testBenchDefaultsAreValid() {
     const PwmOutputConfig defaults{
         rpm_sync::config::kPwmOutputMinUs,
         rpm_sync::config::kPwmOutputMaxUs,
     };
-    return expect(!rpm_sync::pwmOutputConfigValid(defaults),
-                  "uncalibrated defaults must not enable PWM output");
+    return expect(rpm_sync::pwmOutputConfigValid(defaults),
+                  "bench-calibrated defaults must be valid");
 }
 
 }  // namespace
@@ -112,7 +112,7 @@ int main() {
     passed = testIndependentSaturation() && passed;
     passed = testInvalidConfigurations() && passed;
     passed = testInvalidRequestRejectsWholePair() && passed;
-    passed = testUncalibratedDefaultsRemainInvalid() && passed;
+    passed = testBenchDefaultsAreValid() && passed;
     if (!passed) {
         return 1;
     }

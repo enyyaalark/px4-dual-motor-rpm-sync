@@ -6,6 +6,8 @@
 
 ### Added
 
+- 2026-09-15：Issue #16 将闭环 `system_controller` 接入目标固件：新增 `system_controller_adapter` C++ 适配层，主循环每 20ms 执行一次控制步并输出 TIM1 修正 PWM、按状态切换 PB2 旁路；`app_config.hpp` 增加台架输出边界 `1100–1140µs` 与待实测 P 初值（`kp=0.05`、`ki=0`、死区 10RPM、最低闭环 1000RPM、修正限幅 40µs）；新增 `rpm_sync_ctrl,v1` 遥测。Debug/Release 交叉构建 0 errors/0 warnings，主机测试 58/58 通过。Hall RPM 与 P 同步效果仍待安装磁体后实机验证。
+
 - 2026-09-15：Issue #13 台架联调中发现 MAIN1 输入在 PA6 捕获接触不良，将 `PX4 PWM1` 捕获从 `PA6/TIM3_CH1` 改为 `PB4/TIM3_CH1`，保持 TIM3 PWM-input 模式不变；CubeMX 6.18.1 重新生成，Debug/Release 目标构建 0 errors/0 warnings，实机双路 PWM 输入均 `VALID`。Hall 双路仍待安装磁体后验证。
 
 - 2026-09-15：Issue #11 在 `rpm_sync_capture.ioc` 加入 `PB2/BYPASS_SELECT` GPIO 输出（push-pull、no pull、low speed、初始低电平），并在 `MX_GPIO_Init()` 中先写输出锁存低电平再初始化；测试入口 `BYPASS_SELECT_TEST_ENABLE` 默认关闭。CubeMX 6.18.1 重新生成，Debug/Release 目标构建 0 errors/0 warnings，58/58 主机测试通过；HCT157 实机旁路验证仍待成员 A 完成。

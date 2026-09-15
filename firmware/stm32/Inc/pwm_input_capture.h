@@ -6,15 +6,8 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include "capture_snapshot_types.h"
 #include "stm32g4xx_hal.h"
-
-typedef struct
-{
-  uint32_t period_us;
-  uint16_t pulse_width_us;
-  uint32_t last_update_ms;
-  uint8_t has_sample;
-} PwmInputCaptureSnapshot;
 
 HAL_StatusTypeDef PwmInputCapture_Start(TIM_HandleTypeDef *htim3,
                                         TIM_HandleTypeDef *htim4);

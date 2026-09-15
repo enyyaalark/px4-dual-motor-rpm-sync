@@ -35,14 +35,16 @@ bool testInvalidRequestReturnsNoPartialPair() {
                   "invalid pair stays zero");
 }
 
-bool testConfiguredDefaultsKeepTargetOutputDisabled() {
+bool testConfiguredDefaultsUseBenchBounds() {
     const PwmOutputAdapterRequest request{1500.0F, 1500.0F};
     const PwmOutputAdapterResult result =
         PwmOutputAdapter_EvaluateConfigured(&request);
-    return expect(result.status == PWM_OUTPUT_ADAPTER_INVALID_CONFIG,
-                  "TBD bounds keep output invalid") &&
-           expect(result.channel1_us == 0U && result.channel2_us == 0U,
-                  "invalid configured output stays zero");
+    return expect(result.status == PWM_OUTPUT_ADAPTER_VALID,
+                  "bench bounds accept requests") &&
+           expect(result.channel1_us == 1140U && result.channel2_us == 1140U,
+                  "bench bounds clamp both channels to 1140") &&
+           expect(result.channel1_limited == 1U && result.channel2_limited == 1U,
+                  "bench bounds report saturation");
 }
 
 bool testNullPointersAreRejected() {
@@ -62,7 +64,7 @@ int main() {
     bool passed = true;
     passed = testValidRequestIsRoundedAndLimitedAsOnePair() && passed;
     passed = testInvalidRequestReturnsNoPartialPair() && passed;
-    passed = testConfiguredDefaultsKeepTargetOutputDisabled() && passed;
+    passed = testConfiguredDefaultsUseBenchBounds() && passed;
     passed = testNullPointersAreRejected() && passed;
     if (!passed) {
         return 1;

@@ -10,9 +10,11 @@ namespace rpm_sync::config {
 inline constexpr std::uint16_t kPwmInputMinUs = 950U;
 inline constexpr std::uint16_t kPwmInputMaxUs = 1'950U;
 
-// ESC output bounds remain invalid/TBD until both ESCs are calibrated.
-inline constexpr std::uint16_t kPwmOutputMinUs = 0U;
-inline constexpr std::uint16_t kPwmOutputMaxUs = 0U;
+// Bench-only ESC output bounds. Both ESCs were verified at 1100..1140 us
+// without propellers; these bounds keep the STM32-corrected path within the
+// confirmed bench range until a wider ESC calibration exists.
+inline constexpr std::uint16_t kPwmOutputMinUs = 1100U;
+inline constexpr std::uint16_t kPwmOutputMaxUs = 1140U;
 
 // PPR was established from the 2026-09-10 two-motor, three-point calibration.
 // The Hall timeout and maximum RPM are engineering initial values accepted by the
@@ -22,11 +24,13 @@ inline constexpr bool kSyncControlDefaultOn = false;
 inline constexpr float kHallTimerHz = 1'000'000.0F;
 inline constexpr float kPulsesPerRevolution = 1.0F;
 inline constexpr float kMaximumRpm = 3'300.0F;
-inline constexpr float kKpDefault = 0.0F;
+// Initial bench P-only gains. These are starting points for the demo and must
+// be re-reviewed after dual-Hall RPM evidence is collected.
+inline constexpr float kKpDefault = 0.05F;
 inline constexpr float kKiDefault = 0.0F;
-inline constexpr float kDeadbandRpmDefault = 0.0F;
-inline constexpr float kMinClosedLoopRpm = 0.0F;
-inline constexpr float kCorrectionLimitUs = 0.0F;
+inline constexpr float kDeadbandRpmDefault = 10.0F;
+inline constexpr float kMinClosedLoopRpm = 1000.0F;
+inline constexpr float kCorrectionLimitUs = 40.0F;
 inline constexpr float kIntegralLimit = 0.0F;
 
 // 100 ms is an engineering initial value based on the longest selected measured
