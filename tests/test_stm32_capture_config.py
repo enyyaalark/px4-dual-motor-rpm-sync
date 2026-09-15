@@ -41,8 +41,8 @@ class Stm32CaptureConfigTests(unittest.TestCase):
     def test_dual_px4_pwm_inputs_use_independent_one_megahertz_timers(self):
         ioc = load_ioc()
 
-        self.assertEqual("S_TIM3_CH1", ioc["PA6.Signal"])
-        self.assertEqual("PX4_PWM1_CAPTURE", ioc["PA6.GPIO_Label"])
+        self.assertEqual("S_TIM3_CH1", ioc["PB4.Signal"])
+        self.assertEqual("PX4_PWM1_CAPTURE", ioc["PB4.GPIO_Label"])
         self.assertEqual("S_TIM4_CH1", ioc["PB6.Signal"])
         self.assertEqual("PX4_PWM2_CAPTURE", ioc["PB6.GPIO_Label"])
         for timer in ("TIM3", "TIM4"):

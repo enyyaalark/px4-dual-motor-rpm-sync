@@ -6,6 +6,8 @@
 
 ### Added
 
+- 2026-09-15：Issue #13 台架联调中发现 MAIN1 输入在 PA6 捕获接触不良，将 `PX4 PWM1` 捕获从 `PA6/TIM3_CH1` 改为 `PB4/TIM3_CH1`，保持 TIM3 PWM-input 模式不变；CubeMX 6.18.1 重新生成，Debug/Release 目标构建 0 errors/0 warnings，实机双路 PWM 输入均 `VALID`。Hall 双路仍待安装磁体后验证。
+
 - 2026-09-15：Issue #11 在 `rpm_sync_capture.ioc` 加入 `PB2/BYPASS_SELECT` GPIO 输出（push-pull、no pull、low speed、初始低电平），并在 `MX_GPIO_Init()` 中先写输出锁存低电平再初始化；测试入口 `BYPASS_SELECT_TEST_ENABLE` 默认关闭。CubeMX 6.18.1 重新生成，Debug/Release 目标构建 0 errors/0 warnings，58/58 主机测试通过；HCT157 实机旁路验证仍待成员 A 完成。
 
 - 2026-09-14：Issue #10 按成员 A 的配置同步在 `rpm_sync_capture.ioc` 加入 TIM1 双路 PWM 输出：`PA8/TIM1_CH1`、`PA10/TIM1_CH3`，1 MHz、Prescaler 15、Period 2499（400 Hz）、PWM mode 1、Active High、ARR/OC preload，初始 Pulse 0；`PA10` 脱离 USART1_RX，未接线的 `USART1_RX` 移到 `PB7`，`PA9` 保持遥测 TX。`main.c` 增加仅逻辑分析仪使用的测试入口（约 1000/1140 µs，同一 update event）。CubeMX 6.18.1 重新生成，Debug/Release 目标构建 0 errors/0 warnings，57/57 主机测试通过；尚未接逻辑分析仪实机验证，ESC/HCT157/电机/电池保持断开，闭环关闭。
