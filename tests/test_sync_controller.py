@@ -56,6 +56,18 @@ int main() {
     const float unwind = step(controller, config, 199.0F, 200.0F, 1.0F, true);
     if (!near(unwind, -1.0F)) return 19;
     if (!near(controller.integral, 0.0F)) return 20;
+    const SyncControllerConfig derivative_config{
+        0.0F, 0.0F, 0.0F, 100.0F, 10.0F, 0.0F, 1.0F, 0.0F};
+    SyncController derivative_controller{};
+    if (!near(step(derivative_controller, derivative_config, 110.0F, 100.0F, 0.1F, true), 0.0F)) return 21;
+    if (!near(step(derivative_controller, derivative_config, 120.0F, 100.0F, 0.1F, true), 10.0F)) return 22;
+    if (!near(step(derivative_controller, derivative_config, 120.0F, 100.0F, 1.0F, false), 0.0F)) return 23;
+    if (derivative_controller.filtered_error != 0.0F || derivative_controller.has_previous_error) return 24;
+    const SyncControllerConfig filter_config{
+        1.0F, 0.0F, 0.0F, 100.0F, 100.0F, 0.0F, 0.0F, 0.1F};
+    SyncController filter_controller{};
+    if (!near(step(filter_controller, filter_config, 120.0F, 100.0F, 0.1F, true), 10.0F)) return 25;
+    if (!near(step(filter_controller, filter_config, 120.0F, 100.0F, 0.1F, true), 15.0F)) return 26;
     return 0;
 }
 '''

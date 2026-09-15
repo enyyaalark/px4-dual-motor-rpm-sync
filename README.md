@@ -4,7 +4,7 @@
 
 本项目面向双发后推固定翼的台架验证结构：PX4 负责遥控输入、姿态与上层飞行控制；STM32G431 独立测量两台无刷电机的实际转速，在两个基础指令相同的前提下实施有限幅的同步修正，并通过 UART 输出可复核数据。
 
-**当前状态：规划、代码骨架、STM32 最小 bring-up，以及 PA0/PA1 + TIM2 的双路 Hall 捕获均已实机完成。Issue #7/#8 已形成双路 RPM 遥测和 `PPR=1` 初值。Issue #9 已在目标构建中接入 PA6/TIM3_CH1 与 PB6/TIM4_CH1 的双路 PX4 PWM 捕获及独立 UART 诊断；CubeMX 重新生成、Debug/Release 交叉构建和主机测试已通过，但尚未烧录到 STM32 做双路实机捕获。PX4 当前已更新为 1.17.0，MAIN1/2 的 400 Hz、1000/1300 µs 静态/动态波形由成员 A 验证。Issue #10 的 ESC 输出范围仍为无效/TBD，TIM1 未配置或启动，闭环关闭，不具备安全飞行条件。**
+**当前状态：控制链硬件链路基本打通。双路 Hall（PA0/PA1 + TIM2）已实机验证；双路 PX4 PWM 输入已实机 `VALID`（MAIN1 捕获已从 PA6 改为 PB4/TIM3_CH1，MAIN2 为 PB6/TIM4_CH1）；TIM1 双路 PWM 输出（PA8/PA10）已通过逻辑分析仪验证；HCT157 旁路默认 A 与 3.3V 高选 B 均 L1 通过；ESC1/ESC2 无桨功能验证完成。闭环 `system_controller` 已接入目标固件，baseline/sync 两版产物已构建，但 Hall RPM 与 P 同步效果尚待安装磁体后实机验证；不具备安全飞行条件。**
 
 ## 项目目标
 
@@ -57,7 +57,7 @@ tests/                主机侧基础测试
 docs/                 架构、接线、算法、安全、校准、计划与风险文档
 ```
 
-STM32 应用层使用 C++17，状态机至少包括 `INIT`、`MONITOR_ONLY`、`SYNC_CONTROL`、`BYPASS`、`FAULT`。参数集中在 `app_config.hpp`。目标工程已配置 `PA0/TIM2_CH1`、`PA1/TIM2_CH2` 双路 Hall 捕获，以及 `PA6/TIM3_CH1`、`PB6/TIM4_CH1` 双路 PX4 PWM 输入；PWM 输出、旁路和最终整机资源仍保持候选或 `TBD`。CubeMX 生成的 HAL C 代码通过薄适配层接入，HAL 回调只采集固定大小数据。
+STM32 应用层使用 C++17，状态机至少包括 `INIT`、`MONITOR_ONLY`、`SYNC_CONTROL`、`BYPASS`、`FAULT`。参数集中在 `app_config.hpp`。目标工程已配置 `PA0/TIM2_CH1`、`PA1/TIM2_CH2` 双路 Hall 捕获、`PB4/TIM3_CH1` 与 `PB6/TIM4_CH1` 双路 PX4 PWM 输入，以及 `PA8/TIM1_CH1`、`PA10/TIM1_CH3` 双路 PWM 输出；闭环 `system_controller` 已接入。CubeMX 生成的 HAL C 代码通过薄适配层接入，HAL 回调只采集固定大小数据。
 
 ## 快速开始
 
@@ -124,15 +124,20 @@ UART 第一阶段发送到电脑；PX4 不会自动理解这些数据。若未�
 - [x] 双路 Hall 捕获固件 SWD 写入/校验及 UART 无脉冲/单路/复位双路采集
 - [x] 双路 Hall 到 RPM 评估的软件接入、PPR 离线标定工具和 PWM 输出 C/HAL 校验边界
 - [x] 双路 PX4 PWM 输入的 CubeMX/HAL/C++17 目标集成与主机/交叉构建验证
+- [x] 双路 PX4 PWM 输入实机 `VALID`（PB4/MAIN1、PB6/MAIN2）
+- [x] TIM1 双路 PWM 输出逻辑分析仪验证
+- [x] HCT157 旁路默认 A 与高选 B L1 验证
+- [x] ESC1/ESC2 无桨功能验证
+- [x] 闭环控制目标固件集成与 baseline/sync 产物构建（待磁体实机验证）
 - [ ] 最高脉冲频率与 RPM 精度验收（PPR=1；v2 双路停止归零已观察通过，精确 100 ms 时刻仍待高采样率证据）
 - [ ] 硬件型号、电压、协议和引脚确认
-- [ ] 霍尔、PWM、旁路及完整 UART CSV 遥测实机验证
+- [ ] Hall RPM 实机验证与完整 11 字段 UART CSV 遥测
 - [ ] 开环基线、同步控制和故障注入测试
 - [ ] 带桨台架数据、演示视频和最终报告
 
 ## 已知限制
 
-- 飞控外壳型号、PX4 1.17.0 精确提交、接收机型号（FS-SR8；旧照片识读 FS-iA10B 已更正）、双发后推布局、两只相同电调以及电池额定信息已确认；当前 `SYS_AUTOSTART=2100`、`CA_ROTOR_COUNT=2`，但几何与最终飞行配置仍未验收。Pixhawk 硬件修订、PWM 实际电平、接收机实际输出模式、电池化学体系/实测电压和螺旋桨仍未确认；STM32 PWM 输入只有目标构建证据，实机捕获待验证。
+- 飞控外壳型号、PX4 1.17.0 精确提交、接收机型号（FS-SR8；旧照片识读 FS-iA10B 已更正）、双发后推布局、两只相同电调以及电池额定信息已确认；当前 `SYS_AUTOSTART=2100`、`CA_ROTOR_COUNT=2`，但几何与最终飞行配置仍未验收。Pixhawk 硬件修订、PWM 实际电平、接收机实际输出模式、电池化学体系/实测电压和螺旋桨仍未确认；STM32 PWM 输入双路已实机 `VALID`。
 - A3144E 能否隔着电机外壳稳定检测磁场尚未验证。
 - 第一版只研究两个基础指令相同时的同步，不覆盖 PX4 主动差动推力。
 - 第一版旁路主要覆盖 MCU 复位或未启动，不能覆盖全部程序锁死故障。

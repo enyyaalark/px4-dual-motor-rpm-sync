@@ -1,0 +1,24 @@
+{
+  "date": "2026-09-15",
+  "px4_commit": "d6f12ad1c4f70ad3230afd7d86e971421e02fef4",
+  "purpose": "no-prop dual-motor RPM sync bench range",
+  "supersedes": {
+    "PWM_MAIN_MIN1": 1100,
+    "PWM_MAIN_MIN2": 1100,
+    "PWM_MAIN_MAX1": 1140,
+    "PWM_MAIN_MAX2": 1140
+  },
+  "parameters": {
+    "PWM_MAIN_DIS1": 1000,
+    "PWM_MAIN_DIS2": 1000,
+    "PWM_MAIN_MIN1": 1060,
+    "PWM_MAIN_MIN2": 1060,
+    "PWM_MAIN_MAX1": 1080,
+    "PWM_MAIN_MAX2": 1080,
+    "PWM_MAIN_TIM1": 400,
+    "PWM_MAIN_TIM2": 400,
+    "PWM_MAIN_FUNC1": 101,
+    "PWM_MAIN_FUNC2": 102,
+    "PWM_MAIN_REV": 0
+  }
+}

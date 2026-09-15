@@ -6,6 +6,12 @@
 
 ### Added
 
+- 2026-09-16：同步控制器算法优化：`sync_controller` 的死区采用偏移补偿，并增加死区内状态清零、误差换向时滤波重置、有限值保护、稳定滤波系数和微分阻尼。台架初值为 `kp=0.01`、`kd=0.002`、`filter_tau_seconds=0.1`、`ki=0`；这些仍是台架参数，不代表飞行认证配置。主机语法检查、unittest 和 STM32 Release 交叉构建通过。
+
+- 2026-09-15：Issue #13 v2 台架 PWM 范围同步：`app_config.hpp` 将修正输出边界从 `1100–1140µs` 更新为 `1060–1080µs`，新增 `kBasePwmMismatchUs=20U`；`system_controller` 改为同时评估 MAIN1/MAIN2 两路基础 PWM，两路均有效、脉宽差在 20µs 内且均不低于 1060µs 时才允许修正路径。适配层和 `main.c` 同步传入两路快照，新增 disarm 1000µs、双路不一致和单路超时主机测试。Debug/Release 交叉构建 0 errors/0 warnings，主机测试通过。实机 Hall/P 同步效果仍待磁体后台架验证。
+
+- 2026-09-15：Issue #16 将闭环 `system_controller` 接入目标固件：新增 `system_controller_adapter` C++ 适配层，主循环每 20ms 执行一次控制步并输出 TIM1 修正 PWM、按状态切换 PB2 旁路；`app_config.hpp` 增加台架输出边界与待实测 P 初值（`kp=0.05`、`ki=0`、死区 10RPM、最低闭环 1000RPM、修正限幅 40µs）；新增 `rpm_sync_ctrl,v1` 遥测。Hall RPM 与 P 同步效果仍待安装磁体后实机验证。
+
 - 2026-09-15：Issue #13 台架联调中发现 MAIN1 输入在 PA6 捕获接触不良，将 `PX4 PWM1` 捕获从 `PA6/TIM3_CH1` 改为 `PB4/TIM3_CH1`，保持 TIM3 PWM-input 模式不变；CubeMX 6.18.1 重新生成，Debug/Release 目标构建 0 errors/0 warnings，实机双路 PWM 输入均 `VALID`。Hall 双路仍待安装磁体后验证。
 
 - 2026-09-15：Issue #11 在 `rpm_sync_capture.ioc` 加入 `PB2/BYPASS_SELECT` GPIO 输出（push-pull、no pull、low speed、初始低电平），并在 `MX_GPIO_Init()` 中先写输出锁存低电平再初始化；测试入口 `BYPASS_SELECT_TEST_ENABLE` 默认关闭。CubeMX 6.18.1 重新生成，Debug/Release 目标构建 0 errors/0 warnings，58/58 主机测试通过；HCT157 实机旁路验证仍待成员 A 完成。
@@ -53,6 +59,12 @@
 - 2026-09-03：Issue #6 双路 A3144E→HC14 L1 串扰验证——第二路使用独立第二颗 SN74HC14N `1A/1Y`，与第一路同型 RC 网络、3.3V 供电和共地；两路 `1Y` 分别接到候选 `PA0/PA1`。只触发单路、两路同时和反相动作均互不影响，未观察到毛刺；线束抖动为无波形观察记录。原始证据（sigrok 8 通道、20 kHz、50 µs 采样间隔）纳入 `data/raw/2026-09-03/`。STM32 TIM2 捕获、RPM 与最高预期脉冲频率仍待验证。
 
 ### Changed
+
+- 2026-09-16：Issue #15/#16 本地台架 A/B 初步验证中，MAVLink 固定执行器输入的同步段获得 45/45 个有效控制样本、Hall/PWM 双路有效率 100%、全程 `state=2` 且 `fault=0x0`。与 baseline 在共同 `base_us=1062` 区间比较，中位绝对误差由 200 RPM 降至 94 RPM，P95 由 274 RPM 降至 131 RPM；同步全段中位误差为 87 RPM/4%，判定 `IMPROVED`。原始数据按策略仅保留本地，GitHub 只登记文件名、SHA-256 和统计；baseline 仍含 UART 损坏字节，需用同一 MAVLink 输出补采后再关闭验收项。
+
+- 2026-09-16：保留工作树中已存在的 `system_controller_adapter.cpp` Hall 源交换：台架将 Hall1（TIM2_CH1）接在 TIM1_CH3 驱动的电机、Hall2（TIM2_CH2）接在 TIM1_CH1 驱动的电机，适配层交换后使 `rpm1/rpm2` 与 TIM1 输出通道一致。该映射依赖台架接线，仍需成员 A 复核确认。
+
+- 2026-09-16：`kKpDefault` 从 0.05 调整为 0.01，降低比例增益以减少台架同步的过冲/振荡；仍为待标定初值，闭环默认关闭。
 
 - 2026-09-05：Issue #14 的 `rpm_sync_capture,v2` 校验器增加 RPM 状态/数值语义检查，拒绝非 `VALID` 状态携带有效 RPM、等待状态携带周期或有效状态缺少一致原始值；完整 11 字段目标发送继续等待有效 PWM/状态机数据源，不用全零占位伪装完成。
 

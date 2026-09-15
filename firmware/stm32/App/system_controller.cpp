@@ -37,7 +37,8 @@ float absolute(float value) noexcept {
 void reset(SystemController& controller) noexcept {
     rpm_sync::reset(controller.rpm_capture[0]);
     rpm_sync::reset(controller.rpm_capture[1]);
-    rpm_sync::reset(controller.pwm_input);
+    rpm_sync::reset(controller.pwm_input[0]);
+    rpm_sync::reset(controller.pwm_input[1]);
     rpm_sync::reset(controller.sync);
     rpm_sync::reset(controller.faults);
     rpm_sync::reset(controller.bypass);
@@ -69,9 +70,13 @@ void onHallPulse(SystemController& controller,
 }
 
 void onPwmInput(SystemController& controller,
+                std::size_t channel,
                 std::uint16_t pulse_width_us,
                 std::uint32_t now_ms) noexcept {
-    rpm_sync::update(controller.pwm_input, pulse_width_us, now_ms);
+    if (channel >= 2U) {
+        return;
+    }
+    rpm_sync::update(controller.pwm_input[channel], pulse_width_us, now_ms);
 }
 
 SystemStepResult step(SystemController& controller,
@@ -83,10 +88,14 @@ SystemStepResult step(SystemController& controller,
     const RpmReading rpm2 = evaluateRpm(controller.rpm_capture[1],
                                         controller.config.rpm_config,
                                         now_ms);
-    const PwmInputReading pwm_input = evaluatePwmInput(
-        controller.pwm_input,
-        controller.config.pwm_input_config,
-        now_ms);
+    const PwmInputReading pwm_input[2] = {
+        evaluatePwmInput(controller.pwm_input[0],
+                         controller.config.pwm_input_config,
+                         now_ms),
+        evaluatePwmInput(controller.pwm_input[1],
+                         controller.config.pwm_input_config,
+                         now_ms),
+    };
 
     refreshTransientFault(controller.faults,
                           FaultFlag::kHall1Timeout,
@@ -99,14 +108,38 @@ SystemStepResult step(SystemController& controller,
                           isImplausible(rpm1) || isImplausible(rpm2));
     refreshTransientFault(controller.faults,
                           FaultFlag::kPwmInputInvalid,
-                          isPwmInputInvalid(pwm_input));
+                          isPwmInputInvalid(pwm_input[0]) ||
+                              isPwmInputInvalid(pwm_input[1]));
 
     const bool corrected_allowed =
         useCorrectedPwm(controller.bypass, hasFault(controller.faults));
 
     const bool rpm_valid = (rpm1.status == RpmStatus::kValid) &&
                            (rpm2.status == RpmStatus::kValid);
-    const bool base_valid = pwm_input.status == PwmInputStatus::kValid;
+    const bool base_valid =
+        (pwm_input[0].status == PwmInputStatus::kValid) &&
+        (pwm_input[1].status == PwmInputStatus::kValid);
+    const std::uint16_t base_pwm1_us =
+        base_valid ? pwm_input[0].pulse_width_us : 0U;
+    const std::uint16_t base_pwm2_us =
+        base_valid ? pwm_input[1].pulse_width_us : 0U;
+    const std::uint16_t base_pwm_us = base_valid
+        ? static_cast<std::uint16_t>(
+              (static_cast<std::uint32_t>(base_pwm1_us) +
+               static_cast<std::uint32_t>(base_pwm2_us) + 1U) /
+              2U)
+        : 0U;
+    const bool base_mismatch_ok =
+        base_valid &&
+        (absolute(static_cast<float>(base_pwm1_us) -
+                  static_cast<float>(base_pwm2_us)) <=
+         static_cast<float>(controller.config.base_pwm_mismatch_us));
+    const bool base_active =
+        base_valid && base_mismatch_ok &&
+        (base_pwm1_us >=
+         controller.config.pwm_output_config.minimum_us) &&
+        (base_pwm2_us >=
+         controller.config.pwm_output_config.minimum_us);
     const bool minimum_rpm_configured =
         std::isfinite(controller.config.sync_config.minimum_rpm) &&
         (controller.config.sync_config.minimum_rpm > 0.0F);
@@ -117,7 +150,7 @@ SystemStepResult step(SystemController& controller,
 
     const bool sync_enabled = corrected_allowed &&
                               controller.sync_enable_requested &&
-                              base_valid && above_minimum_rpm;
+                              base_active && above_minimum_rpm;
 
     const float error_rpm = rpm_valid ? (rpm1.rpm - rpm2.rpm) : 0.0F;
     const float mean_rpm =
@@ -132,9 +165,6 @@ SystemStepResult step(SystemController& controller,
                                                rpm2.rpm,
                                                dt_seconds,
                                                sync_enabled);
-    const std::uint16_t base_pwm_us =
-        base_valid ? pwm_input.pulse_width_us : 0U;
-
     SystemStepResult result{};
     result.telemetry.timestamp_ms = now_ms;
     result.telemetry.base_pwm_us = base_pwm_us;
@@ -144,7 +174,7 @@ SystemStepResult step(SystemController& controller,
     result.telemetry.error_percent = error_percent;
     result.telemetry.correction_us = correction_us;
 
-    if (base_valid) {
+    if (base_active) {
         const PwmOutputEvaluation output = evaluatePwmOutput(
             static_cast<float>(base_pwm_us) - correction_us,
             static_cast<float>(base_pwm_us) + correction_us,
@@ -161,7 +191,7 @@ SystemStepResult step(SystemController& controller,
     // Never select the STM32 path unless it contains a complete, valid pair of
     // outputs.  The bypass/fault gate alone is insufficient while the input is
     // still waiting or the hardware output bounds remain uncalibrated.
-    result.select_corrected = corrected_allowed && base_valid &&
+    result.select_corrected = corrected_allowed && base_active &&
                               result.pwm_output_valid;
 
     AppState next_state = AppState::kInit;

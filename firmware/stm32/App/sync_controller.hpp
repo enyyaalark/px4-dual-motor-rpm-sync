@@ -9,10 +9,14 @@ struct SyncControllerConfig {
     float minimum_rpm{};
     float correction_limit_us{};
     float integral_limit{};
+    float kd{};
+    float filter_tau_seconds{};
 };
 
 struct SyncController {
     float integral{};
+    float filtered_error{};
+    bool has_previous_error{};
 };
 
 void reset(SyncController& controller) noexcept;

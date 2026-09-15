@@ -29,6 +29,7 @@
 #include "pwm_input_capture.h"
 #include "pwm_input_evaluator.h"
 #include "rpm_evaluator.h"
+#include "system_controller_adapter.h"
 #include <stdio.h>
 
 /* USER CODE END Includes */
@@ -46,6 +47,8 @@
 #define TELEMETRY_TIMEOUT_MS 20U
 #define BYPASS_SELECT_TEST_ENABLE 0U
 #define BYPASS_SELECT_TEST_PERIOD_MS 2000U
+#define CONTROL_PERIOD_MS 20U
+#define SYNC_CONTROL_ENABLE 1U
 
 /* USER CODE END PD */
 
@@ -61,12 +64,15 @@
 static uint32_t last_led_tick_ms;
 static uint32_t last_telemetry_tick_ms;
 static uint32_t last_bypass_tick_ms;
+static uint32_t last_control_tick_ms;
 static HallCaptureSnapshot hall_snapshots[2];
 static RpmEvaluationResult rpm_results[2];
 static PwmInputCaptureSnapshot pwm_input_snapshots[2];
 static PwmInputEvaluationResult pwm_input_results[2];
+static SystemControllerAdapterResult controller_result;
 static uint8_t capture_telemetry[320];
 static uint8_t pwm_input_telemetry[320];
+static uint8_t ctrl_telemetry[256];
 static const uint8_t telemetry_heartbeat[] =
   "rpm_sync_bringup,v1,board=weact_g431_qfn48,mode=MONITOR_ONLY\r\n";
 
@@ -137,14 +143,10 @@ int main(void)
     Error_Handler();
   }
 
-  /* Logic-analyzer-only TIM1 dual PWM output entry (Issue #10).
-     ESC/HCT157/motor/battery are disconnected and closed loop is off.
-     Both channels share TIM1's single update event; OC preload is enabled
-     so the compare values below take effect at the next update event. */
   __HAL_TIM_ENABLE_OCxPRELOAD(&htim1, TIM_CHANNEL_1);
   __HAL_TIM_ENABLE_OCxPRELOAD(&htim1, TIM_CHANNEL_3);
-  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 1000U);
-  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 1140U);
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 0U);
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 0U);
   if (HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1) != HAL_OK)
   {
     Error_Handler();
@@ -153,6 +155,10 @@ int main(void)
   {
     Error_Handler();
   }
+
+  SystemControllerAdapter_Init();
+  SystemControllerAdapter_SetSyncEnabled(SYNC_CONTROL_ENABLE);
+  last_control_tick_ms = last_led_tick_ms;
 
   /* USER CODE END 2 */
 
@@ -169,6 +175,27 @@ int main(void)
     {
       last_led_tick_ms = now_ms;
       HAL_GPIO_TogglePin(STATUS_LED_GPIO_Port, STATUS_LED_Pin);
+    }
+
+    if ((now_ms - last_control_tick_ms) >= CONTROL_PERIOD_MS)
+    {
+      const uint32_t previous_control_tick = last_control_tick_ms;
+      last_control_tick_ms = now_ms;
+      const float dt_seconds =
+          (float)(now_ms - previous_control_tick) / 1000.0F;
+
+      HallCapture_Read(hall_snapshots);
+      PwmInputCapture_Read(pwm_input_snapshots);
+      controller_result = SystemControllerAdapter_Step(
+          hall_snapshots, pwm_input_snapshots, now_ms, dt_seconds);
+
+      __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, controller_result.pwm1_us);
+      __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, controller_result.pwm2_us);
+
+      const uint8_t sync_active = (controller_result.state == 2U);
+      HAL_GPIO_WritePin(BYPASS_SELECT_GPIO_Port, BYPASS_SELECT_Pin,
+                        (sync_active && controller_result.select_corrected) ?
+                        GPIO_PIN_SET : GPIO_PIN_RESET);
     }
 
 #if BYPASS_SELECT_TEST_ENABLE
@@ -269,6 +296,34 @@ int main(void)
         (void)HAL_UART_Transmit(&huart1,
                                pwm_input_telemetry,
                                (uint16_t)pwm_input_telemetry_length,
+                               TELEMETRY_TIMEOUT_MS);
+      }
+
+      const int ctrl_telemetry_length = snprintf(
+        (char *)ctrl_telemetry,
+        sizeof(ctrl_telemetry),
+        "rpm_sync_ctrl,v1,t_ms=%lu,base_us=%u,pwm1_us=%u,pwm2_us=%u,"
+        "rpm1=%lu,rpm2=%lu,error_rpm=%ld,error_percent=%ld,"
+        "correction_us=%ld,select=%u,state=%u,fault=0x%lx\r\n",
+        (unsigned long)now_ms,
+        (unsigned int)controller_result.base_pwm_us,
+        (unsigned int)controller_result.pwm1_us,
+        (unsigned int)controller_result.pwm2_us,
+        (unsigned long)controller_result.rpm1,
+        (unsigned long)controller_result.rpm2,
+        (long)controller_result.error_rpm,
+        (long)controller_result.error_percent,
+        (long)controller_result.correction_us,
+        (unsigned int)controller_result.select_corrected,
+        (unsigned int)controller_result.state,
+        (unsigned long)controller_result.fault_flags);
+
+      if ((ctrl_telemetry_length > 0) &&
+          ((size_t)ctrl_telemetry_length < sizeof(ctrl_telemetry)))
+      {
+        (void)HAL_UART_Transmit(&huart1,
+                               ctrl_telemetry,
+                               (uint16_t)ctrl_telemetry_length,
                                TELEMETRY_TIMEOUT_MS);
       }
     }

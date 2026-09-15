@@ -8,8 +8,8 @@ Issue #6 的候选方案已通过成员 A 的 L0 排针可及性复核和 STM32C
 | Hall 2 capture | 输入 | 第二颗 HC14 `1Y` | `PA1 / AF1 / TIM2_CH2` | 3.3 V 整形输出；上升沿捕获 | L0 可及性、CubeMX、物理接线与 UART 采集已验证；最高实际频率待 Issue #8 验证 |
 | PX4 PWM 1 | 输入 | Pixhawk MAIN1（左侧后推电机基础指令） | 已配置 `PB4 / AF2 / TIM3_CH1` | 400 Hz；监测范围 950–1950 µs；电平待测 | CubeMX/目标构建通过；实机双路捕获已通过 |
 | PX4 PWM 2 | 输入 | Pixhawk MAIN2（右侧后推电机基础指令） | 已配置 `PB6 / AF2 / TIM4_CH1` | 400 Hz；监测范围 950–1950 µs；电平待测 | CubeMX/目标构建通过；排针与实机捕获待复核 |
-| ESC PWM 1 | 输出 | HCT157 B1 | 已配置 `PA8 / AF6 / TIM1_CH1` | 400 Hz；仅逻辑分析仪验证 1000/1140 µs | 待实机波形、电平和 HCT157/ESC 边界复核 |
-| ESC PWM 2 | 输出 | HCT157 B2 | 已配置 `PA10 / AF6 / TIM1_CH3` | 400 Hz；仅逻辑分析仪验证 1000/1140 µs | 待实机波形、电平和 HCT157/ESC 边界复核 |
+| ESC PWM 1 | 输出 | HCT157 B1 | 已配置 `PA8 / AF6 / TIM1_CH1` | 400 Hz；当前无桨台架范围 1060–1080 µs | 待实机波形、电平和 HCT157/ESC 边界复核 |
+| ESC PWM 2 | 输出 | HCT157 B2 | 已配置 `PA10 / AF6 / TIM1_CH3` | 400 Hz；当前无桨台架范围 1060–1080 µs | 待实机波形、电平和 HCT157/ESC 边界复核 |
 | Bypass select | 输出 | HCT157 S | 已配置 `PB2 / GPIO / BYPASS_SELECT` | push-pull、no pull、low speed，初始低电平；外部 10kΩ 下拉 | 需逻辑分析仪验证上电/复位低电平与 B 选择 |
 | Telemetry TX | 输出 | CH340 RXD（第一阶段） | `PA9 / USART1_TX` | 3.3V UART；仅单向连接 | Issue #3 bring-up 已实板验证，最终控制器待复核 |
 | Telemetry RX | 输入 | 第一阶段不连接 | 已配置 `PB7 / AF7 / USART1_RX`（仅满足 CubeMX Asynchronous 模式，不接线） | CH340 TXD 实测 5 V，禁止直连 | 最终控制器只发不收；bring-up `.ioc` 保持原样 |
@@ -22,7 +22,7 @@ Issue #6 的候选方案已通过成员 A 的 L0 排针可及性复核和 STM32C
 | `TIM2` | Hall 1/2 上升沿捕获 | CubeMX 配置为 1 MHz 自由运行、32 位递增计数 | 两路共享同一时间基准；1 µs/tick 时约 71.6 分钟回绕，应用层按无符号 32 位差值处理单次回绕 | 实机 tick/波形对照、输入滤波、最大脉冲频率和中断负载 |
 | `TIM3` | PX4 PWM 1 测量 | 已配置 1 MHz；PWM input/reset mode | 每路 PWM 独占一个定时器，避免两路信号争用同一 slave-reset 时间基准 | STM32 实机周期/脉宽、丢失和越界行为 |
 | `TIM4` | PX4 PWM 2 测量 | 与 TIM3 相同 | 与 MAIN1 独立测量，可分别检测超时和越界 | 同上 |
-| `TIM1` | ESC PWM 1/2 输出 | 已配置 1 MHz、Prescaler 15、Period 2499（400 Hz）；CH1/CH3 PWM mode 1、OC preload、ARR preload | 两路共享周期计数器并同步更新；本轮仅逻辑分析仪验证 1100–1140 µs | 启动/复位瞬态、输出电平、频率、脉宽和 HCT157 波形 |
+| `TIM1` | ESC PWM 1/2 输出 | 已配置 1 MHz、Prescaler 15、Period 2499（400 Hz）；CH1/CH3 PWM mode 1、OC preload、ARR preload | 两路共享周期计数器并同步更新；当前无桨台架范围 1060–1080 µs | 启动/复位瞬态、输出电平、频率、脉宽和 HCT157 波形 |
 
 ## Issue #6 实际 Hall 接线
 

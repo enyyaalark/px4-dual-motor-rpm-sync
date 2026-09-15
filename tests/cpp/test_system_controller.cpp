@@ -40,6 +40,7 @@ constexpr SystemControllerConfig kConfig{
     kPwmInputConfig,
     kPwmOutputConfig,
     kSyncConfig,
+    20U,
     false,
 };
 
@@ -54,6 +55,13 @@ bool near(float actual, float expected) {
     return std::fabs(actual - expected) < 0.01F;
 }
 
+void setBothPwmInputs(SystemController& controller,
+                      std::uint16_t pulse_width_us,
+                      std::uint32_t now_ms) {
+    rpm_sync::onPwmInput(controller, 0U, pulse_width_us, now_ms);
+    rpm_sync::onPwmInput(controller, 1U, pulse_width_us, now_ms);
+}
+
 SystemController configuredController() {
     SystemController controller{};
     controller.config = kConfig;
@@ -61,7 +69,7 @@ SystemController configuredController() {
     rpm_sync::setSelfTestComplete(controller, true);
     rpm_sync::setManualBypass(controller, false);
     rpm_sync::setSyncEnabled(controller, true);
-    rpm_sync::onPwmInput(controller, 1'400U, 0U);
+    setBothPwmInputs(controller, 1'400U, 0U);
     rpm_sync::onHallPulse(controller, 0U, 10'000U, 0U);
     rpm_sync::onHallPulse(controller, 1U, 10'000U, 0U);
     rpm_sync::onHallPulse(controller, 0U, 15'000U, 5U);
@@ -179,7 +187,7 @@ bool testHallTimeoutForcesFaultAndRecovers() {
 
     rpm_sync::onHallPulse(controller, 0U, 20'000U, 205U);
     rpm_sync::onHallPulse(controller, 1U, 22'000U, 205U);
-    rpm_sync::onPwmInput(controller, 1'400U, 205U);
+    setBothPwmInputs(controller, 1'400U, 205U);
     const SystemStepResult recovered = rpm_sync::step(controller, 205U, 0.1F);
 
     return expect(timed_out.state == AppState::kFault,
@@ -202,7 +210,7 @@ bool testPwmTimeoutForcesFaultAndRecovers() {
     const SystemStepResult timed_out = rpm_sync::step(controller, 101U, 0.1F);
     const std::uint32_t fault_flags = timed_out.telemetry.fault_flags;
 
-    rpm_sync::onPwmInput(controller, 1'400U, 101U);
+    setBothPwmInputs(controller, 1'400U, 101U);
     const SystemStepResult recovered = rpm_sync::step(controller, 101U, 0.1F);
 
     return expect(timed_out.state == AppState::kFault,
@@ -232,12 +240,12 @@ bool testPwmTimeoutForcesFaultAndRecovers() {
 bool testPwmOutOfRangeForcesFaultAndRecovers() {
     SystemController controller = configuredController();
     controller.sync.integral = 42.0F;
-    rpm_sync::onPwmInput(controller, 999U, 6U);
+    setBothPwmInputs(controller, 999U, 6U);
 
     const SystemStepResult out_of_range =
         rpm_sync::step(controller, 6U, 0.1F);
 
-    rpm_sync::onPwmInput(controller, 1'400U, 6U);
+    setBothPwmInputs(controller, 1'400U, 6U);
     const SystemStepResult recovered = rpm_sync::step(controller, 6U, 0.1F);
 
     return expect(out_of_range.state == AppState::kFault,
@@ -305,6 +313,53 @@ bool testLowRpmDisablesSync() {
                   "low RPM must pass the base PWM through");
 }
 
+bool testDisarmBaseKeepsRawBypassSelected() {
+    SystemController controller = configuredController();
+    controller.config.pwm_output_config = PwmOutputConfig{1'060U, 1'080U};
+    setBothPwmInputs(controller, 1'000U, 0U);
+
+    const SystemStepResult result = rpm_sync::step(controller, 5U, 0.1F);
+    return expect(result.state == AppState::kMonitorOnly,
+                  "disarm base must stay in MONITOR_ONLY") &&
+           expect(!result.select_corrected,
+                  "disarm base must keep raw PX4 bypass selected") &&
+           expect(!result.pwm_output_valid,
+                  "disarm base must not produce corrected outputs") &&
+           expect(result.pwm1_us == 0U && result.pwm2_us == 0U,
+                  "disarm base must clear corrected outputs");
+}
+
+bool testBasePwmMismatchKeepsRawBypassSelected() {
+    SystemController controller = configuredController();
+    controller.config.pwm_output_config = PwmOutputConfig{1'060U, 1'080U};
+    rpm_sync::onPwmInput(controller, 0U, 1'060U, 0U);
+    rpm_sync::onPwmInput(controller, 1U, 1'081U, 0U);
+
+    const SystemStepResult result = rpm_sync::step(controller, 5U, 0.1F);
+    return expect(result.state == AppState::kMonitorOnly,
+                  "mismatched base PWM must stay in MONITOR_ONLY") &&
+           expect(!result.select_corrected,
+                  "mismatched base PWM must keep raw PX4 bypass selected") &&
+           expect(!result.pwm_output_valid,
+                  "mismatched base PWM must not produce corrected outputs") &&
+           expect(result.pwm1_us == 0U && result.pwm2_us == 0U,
+                  "mismatched base PWM must clear corrected outputs");
+}
+
+bool testSingleBasePwmTimeoutKeepsRawBypassSelected() {
+    SystemController controller = configuredController();
+    rpm_sync::onPwmInput(controller, 0U, 1'400U, 101U);
+
+    const SystemStepResult result = rpm_sync::step(controller, 101U, 0.1F);
+    return expect(result.state == AppState::kFault,
+                  "one timed-out base PWM must force FAULT state") &&
+           expect(!result.select_corrected,
+                  "one timed-out base PWM must keep raw PX4 bypass selected") &&
+           expect((result.telemetry.fault_flags &
+                   rpm_sync::toMask(FaultFlag::kPwmInputInvalid)) != 0U,
+                  "one timed-out base PWM must set the PWM input fault");
+}
+
 bool testResetClearsRuntimeState() {
     SystemController controller = configuredController();
     (void)rpm_sync::step(controller, 5U, 0.1F);
@@ -338,6 +393,9 @@ int main() {
     passed = testPwmOutOfRangeForcesFaultAndRecovers() && passed;
     passed = testImplausibleHallPulseForcesFaultAndRecovers() && passed;
     passed = testLowRpmDisablesSync() && passed;
+    passed = testDisarmBaseKeepsRawBypassSelected() && passed;
+    passed = testBasePwmMismatchKeepsRawBypassSelected() && passed;
+    passed = testSingleBasePwmTimeoutKeepsRawBypassSelected() && passed;
     passed = testResetClearsRuntimeState() && passed;
     if (!passed) {
         return 1;

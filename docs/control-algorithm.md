@@ -16,7 +16,7 @@
 
 ## PWM 输出有效性与最终限幅
 
-`pwm_output` 的硬件无关接口同时接收两路浮点脉宽请求和调用方提供的最小/最大输出边界。边界尚未用两只 ESC 标定时，`app_config.hpp` 保持零值，使配置校验失败；不得使用文档中的示例范围启用真实输出。
+`pwm_output` 的硬件无关接口同时接收两路浮点脉宽请求和调用方提供的最小/最大输出边界。当前 `app_config.hpp` 使用成员 A 2026-09-15 v2 台架范围 `1060–1080µs`；该范围仅用于无桨双电机 RPM 同步验证，不得用于飞行或带桨测试。
 
 - 有限请求在闭区间内取到最近的整数微秒；超出边界时饱和到最近边界，并单独报告每路是否发生限幅；
 - 最小值为 0 或最小值大于最大值时返回 `kInvalidConfig`；
@@ -54,7 +54,7 @@ PPR 已于 2026-09-10 标定为 1；团队同时接受 `100 ms` 停止超时和 
 
 Issue #7 已通过 C/C++ 薄适配层把这些状态接入双路 HAL 捕获快照和版本化 UART 遥测，但尚未接入最终故障标志或控制状态机。当前最大 RPM 与停止超时只是团队接受的待验证初值；脉冲跳变阈值、停止归零和双路行为仍必须用实测波形/UART 确认，主机测试不能代替该验证。
 
-`system_controller` 已把上述模块组合成硬件无关周期步骤：基础 PWM 有效时才产生双路输出，且只有双路输出校验成功后才允许选择 STM32 路径；输入等待或输出范围未标定时继续选择 PX4 原始旁路。非同步状态只透传基础指令，`SYNC_CONTROL` 才施加受限修正。故障刷新目前使用非锁存活动故障；安全关键故障是否锁存以及 `kOutputSaturated` 的门控语义仍待故障注入实验后确定。
+`system_controller` 已把上述模块组合成硬件无关周期步骤：MAIN1/MAIN2 两路基础 PWM 均有效、脉宽差不超过 `kBasePwmMismatchUs=20µs`、且两路都不低于台架输出下界 `1060µs` 时，才允许产生修正输出并选择 STM32 路径；任一输入等待、越界、单路超时、两路不一致或 disarm 基础值低于 1060µs 时继续选择 PX4 原始旁路。非同步状态只透传基础指令，`SYNC_CONTROL` 才施加受限修正。故障刷新目前使用非锁存活动故障；安全关键故障是否锁存以及 `kOutputSaturated` 的门控语义仍待故障注入实验后确定。
 
 ## 误差
 
@@ -68,23 +68,34 @@ error_percent = abs(error_rpm) / mean_rpm * 100
 
 `mean_rpm` 过低时不计算百分比并禁止闭环，防止除零和低速噪声放大。
 
-## P/PI 控制
+## P/可选 PI/可选滤波微分控制
 
 ```text
-if abs(error_rpm) <= deadband_rpm:
-    effective_error = 0
+raw_error = rpm1 - rpm2
+if raw_error > deadband_rpm:
+    error = raw_error - deadband_rpm
+elif raw_error < -deadband_rpm:
+    error = raw_error + deadband_rpm
 else:
-    effective_error = error_rpm
+    error = 0
 
-integral = clamp(integral + effective_error * dt, integral_min, integral_max)
-correction = clamp(Kp * effective_error + Ki * integral,
+filtered_error = lowpass(error, tau)         # tau <= 0 时跳过滤波
+derivative = (filtered_error - previous_filtered_error) / dt
+
+integral = clamp(integral + error * dt, integral_min, integral_max)
+correction = clamp(Kp * filtered_error + Ki * integral + Kd * derivative,
                    -correction_limit_us, correction_limit_us)
 
 pwm1 = clamp(base_pwm - correction, pwm_min_us, pwm_max_us)
 pwm2 = clamp(base_pwm + correction, pwm_min_us, pwm_max_us)
 ```
 
-P 控制先行；只有开环基线和 P 控制数据表明存在稳定残差且无振荡时才启用 `Ki`。
+- 死区使用“偏移补偿”而不是硬清零：越过边界后按 `raw_error - deadband_rpm` 计算，使输出在死区边界连续，减少边界抖振和过冲。
+- 误差进入死区时清除滤波与积分状态，避免残留偏置把输出继续推过目标；误差换向时用当前误差重置滤波并抑制首拍微分冲击。
+- 新增可选的一阶误差低通 `filter_tau_seconds` 和微分增益 `Kd`。`Kd=0` 且 `filter_tau_seconds<=0` 时退化为原有 P/PI 行为。
+- 微分基于滤波后的误差做后向差分，并在首次有效采样时不输出微分项，避免使能瞬间的微分冲击。
+- 当前拆桨台架参数为 `Kp=0.01`、`Ki=0`、`Kd=0.002`、`filter_tau_seconds=0.1`。本地 A/B 记录显示误差下降，但 baseline 仍含 UART 损坏字节，参数继续视为实验值，不代表飞行配置或最终标定结果；闭环使能策略仍默认关闭。
+- P 控制先行；只有开环基线和 P 控制数据表明存在稳定残差且无振荡时才启用 `Ki`。条件积分抗饱和逻辑保持不变，输出饱和且误差同向时冻结积分。
 
 ## 必需保护
 
