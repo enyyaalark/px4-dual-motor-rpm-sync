@@ -37,7 +37,7 @@ Hall 2 -> HC14 -> | STM32G431         |------------------+
 - `rpm_capture`：时间戳/周期捕获与 RPM 更新。
 - `pwm_input`：PX4 标准 PWM 测量及输入有效性。
 - `pwm_output`：最终 PWM 限幅和双路输出接口。
-- `sync_controller`：死区、P/可选 PI、修正限幅与抗饱和。
+- `sync_controller`：死区补偿、P/可选 PI/可选滤波微分、修正限幅与抗饱和。
 - `hall_monitor`：脉冲超时、异常值和归零。
 - `fault_manager`：锁存/非锁存故障与状态迁移。
 - `bypass_control`：自检前默认直通、旁路请求。

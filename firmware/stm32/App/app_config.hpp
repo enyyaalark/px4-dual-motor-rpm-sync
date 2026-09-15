@@ -28,14 +28,18 @@ inline constexpr bool kSyncControlDefaultOn = false;
 inline constexpr float kHallTimerHz = 1'000'000.0F;
 inline constexpr float kPulsesPerRevolution = 1.0F;
 inline constexpr float kMaximumRpm = 3'300.0F;
-// Initial bench P-only gains. These are starting points for the demo and must
-// be re-reviewed after dual-Hall RPM evidence is collected.
-inline constexpr float kKpDefault = 0.05F;
+// Initial bench controller gains. These are starting points for the demo and
+// must be re-reviewed after dual-Hall RPM evidence is collected.
+inline constexpr float kKpDefault = 0.01F;
 inline constexpr float kKiDefault = 0.0F;
 inline constexpr float kDeadbandRpmDefault = 10.0F;
 inline constexpr float kMinClosedLoopRpm = 1000.0F;
 inline constexpr float kCorrectionLimitUs = 40.0F;
 inline constexpr float kIntegralLimit = 0.0F;
+// Optional filtered-derivative damping is disabled until bench Hall RPM data
+// supports calibration. A non-positive filter time constant bypasses filtering.
+inline constexpr float kKdDefault = 0.0F;
+inline constexpr float kErrorFilterTauSecondsDefault = 0.0F;
 
 // 100 ms is an engineering initial value based on the longest selected measured
 // period (34.787 ms). VALID -> TIMED_OUT and RPM zeroing remain to be tested.

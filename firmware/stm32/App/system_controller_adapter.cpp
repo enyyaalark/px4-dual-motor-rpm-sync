@@ -35,6 +35,8 @@ extern "C" void SystemControllerAdapter_Init(void) {
         config::kMinClosedLoopRpm,
         config::kCorrectionLimitUs,
         config::kIntegralLimit,
+        config::kKdDefault,
+        config::kErrorFilterTauSecondsDefault,
     };
     controller.config.base_pwm_mismatch_us = config::kBasePwmMismatchUs;
     controller.config.sync_control_default_on = config::kSyncControlDefaultOn;
@@ -62,15 +64,20 @@ extern "C" SystemControllerAdapterResult SystemControllerAdapter_Step(
         SystemControllerAdapter_Init();
     }
 
+    // The bench rig has Hall1 (TIM2_CH1) physically on the motor driven by
+    // TIM1_CH3 and Hall2 (TIM2_CH2) on the motor driven by TIM1_CH1. The
+    // control model expects rpm1 to be the TIM1_CH1 motor and rpm2 to be the
+    // TIM1_CH3 motor, so swap the Hall sources before feeding the controller.
     for (uint32_t channel = 0U; channel < 2U; ++channel) {
+        const uint32_t hall_channel = 1U - channel;
         controller.rpm_capture[channel].period_ticks =
-            hall_snapshots[channel].period_ticks;
+            hall_snapshots[hall_channel].period_ticks;
         controller.rpm_capture[channel].last_pulse_ms =
-            hall_snapshots[channel].last_pulse_ms;
+            hall_snapshots[hall_channel].last_pulse_ms;
         controller.rpm_capture[channel].has_pulse =
-            hall_snapshots[channel].has_pulse != 0U;
+            hall_snapshots[hall_channel].has_pulse != 0U;
         controller.rpm_capture[channel].has_period =
-            hall_snapshots[channel].has_period != 0U;
+            hall_snapshots[hall_channel].has_period != 0U;
     }
 
     if (base_pwm_snapshots != nullptr) {

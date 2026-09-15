@@ -68,23 +68,33 @@ error_percent = abs(error_rpm) / mean_rpm * 100
 
 `mean_rpm` 过低时不计算百分比并禁止闭环，防止除零和低速噪声放大。
 
-## P/PI 控制
+## P/可选 PI/可选滤波微分控制
 
 ```text
-if abs(error_rpm) <= deadband_rpm:
-    effective_error = 0
+raw_error = rpm1 - rpm2
+if raw_error > deadband_rpm:
+    error = raw_error - deadband_rpm
+elif raw_error < -deadband_rpm:
+    error = raw_error + deadband_rpm
 else:
-    effective_error = error_rpm
+    error = 0
 
-integral = clamp(integral + effective_error * dt, integral_min, integral_max)
-correction = clamp(Kp * effective_error + Ki * integral,
+filtered_error = lowpass(error, tau)         # tau <= 0 时跳过滤波
+derivative = (filtered_error - previous_filtered_error) / dt
+
+integral = clamp(integral + error * dt, integral_min, integral_max)
+correction = clamp(Kp * filtered_error + Ki * integral + Kd * derivative,
                    -correction_limit_us, correction_limit_us)
 
 pwm1 = clamp(base_pwm - correction, pwm_min_us, pwm_max_us)
 pwm2 = clamp(base_pwm + correction, pwm_min_us, pwm_max_us)
 ```
 
-P 控制先行；只有开环基线和 P 控制数据表明存在稳定残差且无振荡时才启用 `Ki`。
+- 死区使用“偏移补偿”而不是硬清零：越过边界后按 `raw_error - deadband_rpm` 计算，使输出在死区边界连续，减少边界抖振和过冲。
+- 新增可选的一阶误差低通 `filter_tau_seconds` 和微分增益 `Kd`。`Kd=0` 且 `filter_tau_seconds<=0` 时退化为原有 P/PI 行为。
+- 微分基于滤波后的误差做后向差分，并在首次有效采样时不输出微分项，避免使能瞬间的微分冲击。
+- 默认配置保持 `kKdDefault=0`、`kErrorFilterTauSecondsDefault=0`，因此闭环默认仍是 P-only；两个新参数必须在台架 Hall RPM 数据支持标定后才启用。
+- P 控制先行；只有开环基线和 P 控制数据表明存在稳定残差且无振荡时才启用 `Ki`。条件积分抗饱和逻辑保持不变，输出饱和且误差同向时冻结积分。
 
 ## 必需保护
 
