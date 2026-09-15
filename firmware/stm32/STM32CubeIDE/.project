@@ -97,6 +97,36 @@
 			<locationURI>PARENT-1-PROJECT_LOC/App/hall_monitor.cpp</locationURI>
 		</link>
 		<link>
+			<name>Application/User/bypass_control.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/App/bypass_control.cpp</locationURI>
+		</link>
+		<link>
+			<name>Application/User/fault_manager.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/App/fault_manager.cpp</locationURI>
+		</link>
+		<link>
+			<name>Application/User/sync_controller.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/App/sync_controller.cpp</locationURI>
+		</link>
+		<link>
+			<name>Application/User/system_controller.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/App/system_controller.cpp</locationURI>
+		</link>
+		<link>
+			<name>Application/User/system_controller_adapter.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/App/system_controller_adapter.cpp</locationURI>
+		</link>
+		<link>
+			<name>Application/User/telemetry_uart.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/App/telemetry_uart.cpp</locationURI>
+		</link>
+		<link>
 			<name>Application/User/stm32g4xx_hal_msp.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Src/stm32g4xx_hal_msp.c</locationURI>

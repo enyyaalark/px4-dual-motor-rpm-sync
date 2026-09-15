@@ -38,8 +38,8 @@ inline constexpr float kCorrectionLimitUs = 40.0F;
 inline constexpr float kIntegralLimit = 0.0F;
 // Optional filtered-derivative damping is disabled until bench Hall RPM data
 // supports calibration. A non-positive filter time constant bypasses filtering.
-inline constexpr float kKdDefault = 0.0F;
-inline constexpr float kErrorFilterTauSecondsDefault = 0.0F;
+inline constexpr float kKdDefault = 0.002F;
+inline constexpr float kErrorFilterTauSecondsDefault = 0.1F;
 
 // 100 ms is an engineering initial value based on the longest selected measured
 // period (34.787 ms). VALID -> TIMED_OUT and RPM zeroing remain to be tested.

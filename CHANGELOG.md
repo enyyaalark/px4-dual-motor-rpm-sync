@@ -6,7 +6,7 @@
 
 ### Added
 
-- 2026-09-16：同步控制器算法优化：`sync_controller` 的死区由“硬清零”改为“偏移补偿”，越过死区边界时输出连续，减少边界抖振和过冲；新增可选的一阶误差低通与微分阻尼，`SyncControllerConfig` 增加 `kd`、`filter_tau_seconds`，`SyncController` 增加 `filtered_error`、`has_previous_error`。`app_config.hpp` 增加 `kKdDefault=0`、`kErrorFilterTauSecondsDefault=0`，适配层传入新字段；新参数默认关闭，闭环默认仍为 P-only。`tests/test_sync_controller.py` 增加微分与滤波回归检查。主机语法检查和 unittest 通过；台架振荡/过冲改善仍需 Hall RPM 数据标定后验证。
+- 2026-09-16：同步控制器算法优化：`sync_controller` 的死区采用偏移补偿，并增加死区内状态清零、误差换向时滤波重置、有限值保护、稳定滤波系数和微分阻尼。台架初值为 `kp=0.01`、`kd=0.002`、`filter_tau_seconds=0.1`、`ki=0`；这些仍是台架参数，不代表飞行认证配置。主机语法检查、unittest 和 STM32 Release 交叉构建通过。
 
 - 2026-09-15：Issue #13 v2 台架 PWM 范围同步：`app_config.hpp` 将修正输出边界从 `1100–1140µs` 更新为 `1060–1080µs`，新增 `kBasePwmMismatchUs=20U`；`system_controller` 改为同时评估 MAIN1/MAIN2 两路基础 PWM，两路均有效、脉宽差在 20µs 内且均不低于 1060µs 时才允许修正路径。适配层和 `main.c` 同步传入两路快照，新增 disarm 1000µs、双路不一致和单路超时主机测试。Debug/Release 交叉构建 0 errors/0 warnings，主机测试通过。实机 Hall/P 同步效果仍待磁体后台架验证。
 
@@ -59,6 +59,8 @@
 - 2026-09-03：Issue #6 双路 A3144E→HC14 L1 串扰验证——第二路使用独立第二颗 SN74HC14N `1A/1Y`，与第一路同型 RC 网络、3.3V 供电和共地；两路 `1Y` 分别接到候选 `PA0/PA1`。只触发单路、两路同时和反相动作均互不影响，未观察到毛刺；线束抖动为无波形观察记录。原始证据（sigrok 8 通道、20 kHz、50 µs 采样间隔）纳入 `data/raw/2026-09-03/`。STM32 TIM2 捕获、RPM 与最高预期脉冲频率仍待验证。
 
 ### Changed
+
+- 2026-09-16：Issue #15/#16 本地台架 A/B 初步验证中，MAVLink 固定执行器输入的同步段获得 45/45 个有效控制样本、Hall/PWM 双路有效率 100%、全程 `state=2` 且 `fault=0x0`。与 baseline 在共同 `base_us=1062` 区间比较，中位绝对误差由 200 RPM 降至 94 RPM，P95 由 274 RPM 降至 131 RPM；同步全段中位误差为 87 RPM/4%，判定 `IMPROVED`。原始数据按策略仅保留本地，GitHub 只登记文件名、SHA-256 和统计；baseline 仍含 UART 损坏字节，需用同一 MAVLink 输出补采后再关闭验收项。
 
 - 2026-09-16：保留工作树中已存在的 `system_controller_adapter.cpp` Hall 源交换：台架将 Hall1（TIM2_CH1）接在 TIM1_CH3 驱动的电机、Hall2（TIM2_CH2）接在 TIM1_CH1 驱动的电机，适配层交换后使 `rpm1/rpm2` 与 TIM1 输出通道一致。该映射依赖台架接线，仍需成员 A 复核确认。
 

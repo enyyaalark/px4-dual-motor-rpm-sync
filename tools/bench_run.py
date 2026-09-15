@@ -157,6 +157,8 @@ def _try_parse_capture(line: str) -> bool:
         sample = check_hall_capture_uart.parse_capture_line(line)
     except (ImportError, ValueError):
         return False
+    if all(status is not None for status in sample.status):
+        return sample.status == ("VALID", "VALID")
     return bool(sample.valid[0] and sample.valid[1])
 
 

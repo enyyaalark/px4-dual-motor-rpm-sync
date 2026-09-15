@@ -110,6 +110,22 @@ class BenchRunTests(unittest.TestCase):
             self.assertEqual({1}, baseline_metrics.states)
             self.assertEqual({2}, sync_metrics.states)
 
+    def test_capture_rate_excludes_timed_out_v2_status(self):
+        timed_out = (
+            "rpm_sync_capture,v2,t_ms=2,ch1_valid=1,ch1_period_us=5000,"
+            "ch1_age_ms=101,ch1_raw_rpm=0,ch1_rpm=0,ch1_status=TIMED_OUT,"
+            "ch2_valid=1,ch2_period_us=5000,ch2_age_ms=1,ch2_raw_rpm=3000,"
+            "ch2_rpm=3000,ch2_status=VALID"
+        )
+        run = bench_run.analyze_lines(
+            Path("capture.txt"),
+            [_capture_line(1, 3000, 3000), timed_out],
+        )
+
+        self.assertEqual(2, run.capture_total)
+        self.assertEqual(1, run.capture_both_valid)
+        self.assertEqual(0.5, bench_run.metrics(run).capture_both_valid_rate)
+
 
 if __name__ == "__main__":
     unittest.main()
