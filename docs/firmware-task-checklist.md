@@ -40,13 +40,13 @@
 - [x] Issue #10 实机：TIM1 双路输出逻辑分析仪验证通过。
 - [x] Issue #11 实机：HCT157 默认 A 与高选 B L1 通过；S 切换瞬态豁免。
 - [x] Issue #12 实机：ESC1/ESC2 无桨功能验证。
-- [x] 闭环集成准备（未提交，待验证）：`system_controller` 适配层、台架输出边界/增益、`main.c` 控制步、`rpm_sync_ctrl,v1` 遥测；baseline/sync 两版 Release 产物已构建。
+- [x] 闭环集成准备：`system_controller` 适配层、台架输出边界/增益、`main.c` 控制步、`rpm_sync_ctrl,v1` 遥测；baseline/sync 两版 Release 产物已构建；代码已提交至 PR #79，当前 Ready for review。
 
 ## 当前可以继续的小项
 
-- [x] 闭环集成准备（已完成，待台架验证后提交）。
-- [ ] 待磁体安装后：验证双路 Hall RPM，采开环基线与 P 同步对比。
-- [ ] 闭环验证通过后，把闭环源码整理为 `feat:` PR。
+- [x] 闭环集成准备（已提交 PR #79，等待成员 A 复核和台架验证）。
+- [ ] 待成员 A 完成 Issue #80 的 ESC v2 范围复验后：采开环基线与 P 同步对比。
+- [ ] 闭环实机验证通过后，合并 PR #79 并关闭 Issue #16。
 - [ ] Issue #14 固定 11 字段 CSV：本轮推迟，演示使用 `rpm_sync_capture,v2`、`rpm_sync_pwm_input,v1`、`rpm_sync_ctrl,v1`。
 - [ ] 保持主机侧测试可重复；维护 UART 校验工具与日志格式检查。
 
