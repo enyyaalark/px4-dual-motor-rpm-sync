@@ -6,7 +6,9 @@
 
 ### Added
 
-- 2026-09-15：Issue #16 将闭环 `system_controller` 接入目标固件：新增 `system_controller_adapter` C++ 适配层，主循环每 20ms 执行一次控制步并输出 TIM1 修正 PWM、按状态切换 PB2 旁路；`app_config.hpp` 增加台架输出边界 `1100–1140µs` 与待实测 P 初值（`kp=0.05`、`ki=0`、死区 10RPM、最低闭环 1000RPM、修正限幅 40µs）；新增 `rpm_sync_ctrl,v1` 遥测。Debug/Release 交叉构建 0 errors/0 warnings，主机测试 58/58 通过。Hall RPM 与 P 同步效果仍待安装磁体后实机验证。
+- 2026-09-15：Issue #13 v2 台架 PWM 范围同步：`app_config.hpp` 将修正输出边界从 `1100–1140µs` 更新为 `1060–1080µs`，新增 `kBasePwmMismatchUs=20U`；`system_controller` 改为同时评估 MAIN1/MAIN2 两路基础 PWM，两路均有效、脉宽差在 20µs 内且均不低于 1060µs 时才允许修正路径。适配层和 `main.c` 同步传入两路快照，新增 disarm 1000µs、双路不一致和单路超时主机测试。Debug/Release 交叉构建 0 errors/0 warnings，主机测试通过。实机 Hall/P 同步效果仍待磁体后台架验证。
+
+- 2026-09-15：Issue #16 将闭环 `system_controller` 接入目标固件：新增 `system_controller_adapter` C++ 适配层，主循环每 20ms 执行一次控制步并输出 TIM1 修正 PWM、按状态切换 PB2 旁路；`app_config.hpp` 增加台架输出边界与待实测 P 初值（`kp=0.05`、`ki=0`、死区 10RPM、最低闭环 1000RPM、修正限幅 40µs）；新增 `rpm_sync_ctrl,v1` 遥测。Hall RPM 与 P 同步效果仍待安装磁体后实机验证。
 
 - 2026-09-15：Issue #13 台架联调中发现 MAIN1 输入在 PA6 捕获接触不良，将 `PX4 PWM1` 捕获从 `PA6/TIM3_CH1` 改为 `PB4/TIM3_CH1`，保持 TIM3 PWM-input 模式不变；CubeMX 6.18.1 重新生成，Debug/Release 目标构建 0 errors/0 warnings，实机双路 PWM 输入均 `VALID`。Hall 双路仍待安装磁体后验证。
 

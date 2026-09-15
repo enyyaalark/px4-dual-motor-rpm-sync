@@ -36,6 +36,7 @@ extern "C" void SystemControllerAdapter_Init(void) {
         config::kCorrectionLimitUs,
         config::kIntegralLimit,
     };
+    controller.config.base_pwm_mismatch_us = config::kBasePwmMismatchUs;
     controller.config.sync_control_default_on = config::kSyncControlDefaultOn;
 
     rpm_sync::reset(controller);
@@ -54,7 +55,7 @@ extern "C" void SystemControllerAdapter_SetManualBypass(uint8_t bypass) {
 
 extern "C" SystemControllerAdapterResult SystemControllerAdapter_Step(
     const HallCaptureSnapshot hall_snapshots[2],
-    const PwmInputCaptureSnapshot *base_pwm_snapshot,
+    const PwmInputCaptureSnapshot base_pwm_snapshots[2],
     uint32_t now_ms,
     float dt_seconds) {
     if (!initialized) {
@@ -72,13 +73,15 @@ extern "C" SystemControllerAdapterResult SystemControllerAdapter_Step(
             hall_snapshots[channel].has_period != 0U;
     }
 
-    if (base_pwm_snapshot != nullptr) {
-        controller.pwm_input.pulse_width_us =
-            base_pwm_snapshot->pulse_width_us;
-        controller.pwm_input.last_update_ms =
-            base_pwm_snapshot->last_update_ms;
-        controller.pwm_input.has_sample =
-            base_pwm_snapshot->has_sample != 0U;
+    if (base_pwm_snapshots != nullptr) {
+        for (uint32_t channel = 0U; channel < 2U; ++channel) {
+            controller.pwm_input[channel].pulse_width_us =
+                base_pwm_snapshots[channel].pulse_width_us;
+            controller.pwm_input[channel].last_update_ms =
+                base_pwm_snapshots[channel].last_update_ms;
+            controller.pwm_input[channel].has_sample =
+                base_pwm_snapshots[channel].has_sample != 0U;
+        }
     }
 
     const rpm_sync::SystemStepResult result =

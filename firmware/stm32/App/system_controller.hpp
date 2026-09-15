@@ -19,13 +19,14 @@ struct SystemControllerConfig {
     PwmInputConfig pwm_input_config{};
     PwmOutputConfig pwm_output_config{};
     SyncControllerConfig sync_config{};
+    std::uint16_t base_pwm_mismatch_us{};
     bool sync_control_default_on{};
 };
 
 struct SystemController {
     SystemControllerConfig config{};
     RpmCapture rpm_capture[2]{};
-    PwmInput pwm_input{};
+    PwmInput pwm_input[2]{};
     SyncController sync{};
     FaultManager faults{};
     BypassControl bypass{};
@@ -53,6 +54,7 @@ void onHallPulse(SystemController& controller,
                  std::uint32_t now_ms) noexcept;
 
 void onPwmInput(SystemController& controller,
+                std::size_t channel,
                 std::uint16_t pulse_width_us,
                 std::uint32_t now_ms) noexcept;
 

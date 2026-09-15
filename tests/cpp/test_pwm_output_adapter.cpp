@@ -41,8 +41,8 @@ bool testConfiguredDefaultsUseBenchBounds() {
         PwmOutputAdapter_EvaluateConfigured(&request);
     return expect(result.status == PWM_OUTPUT_ADAPTER_VALID,
                   "bench bounds accept requests") &&
-           expect(result.channel1_us == 1140U && result.channel2_us == 1140U,
-                  "bench bounds clamp both channels to 1140") &&
+           expect(result.channel1_us == 1080U && result.channel2_us == 1080U,
+                  "bench bounds clamp both channels to 1080") &&
            expect(result.channel1_limited == 1U && result.channel2_limited == 1U,
                   "bench bounds report saturation");
 }

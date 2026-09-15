@@ -187,7 +187,7 @@ int main(void)
       HallCapture_Read(hall_snapshots);
       PwmInputCapture_Read(pwm_input_snapshots);
       controller_result = SystemControllerAdapter_Step(
-          hall_snapshots, &pwm_input_snapshots[0], now_ms, dt_seconds);
+          hall_snapshots, pwm_input_snapshots, now_ms, dt_seconds);
 
       __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, controller_result.pwm1_us);
       __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, controller_result.pwm2_us);

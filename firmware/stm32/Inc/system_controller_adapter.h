@@ -29,7 +29,7 @@ void SystemControllerAdapter_SetSyncEnabled(uint8_t enabled);
 void SystemControllerAdapter_SetManualBypass(uint8_t bypass);
 SystemControllerAdapterResult SystemControllerAdapter_Step(
     const HallCaptureSnapshot hall_snapshots[2],
-    const PwmInputCaptureSnapshot *base_pwm_snapshot,
+    const PwmInputCaptureSnapshot base_pwm_snapshots[2],
     uint32_t now_ms,
     float dt_seconds);
 

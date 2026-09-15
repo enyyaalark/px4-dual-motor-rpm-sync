@@ -9,7 +9,7 @@ Issue #10 已把双路 PWM 校验通过 `pwm_output_adapter.h` 暴露给生成�
 `PA8/TIM1_CH1` 和 `PA10/TIM1_CH3` 配置为 1 MHz（Prescaler 15）、Period 2499（400 Hz）、
 PWM mode 1、Active High、ARR/OC preload，初始 Pulse 为 0；`PA10` 不再作为 USART1_RX，
 未接线的 `USART1_RX` 移到 `PB7`。`main.c` 提供一个仅逻辑分析仪使用的测试入口，
-显式输出约 1000 µs（CH1）和 1140 µs（CH3），不接 ESC/HCT157/电机/电池，闭环保持关闭。
+显式输出约 1000 µs（CH1）和 1080 µs（CH3），不接 ESC/HCT157/电机/电池，闭环保持关闭。
 
 Issue #11 在同一工程中把 `PB2` 配置为 `BYPASS_SELECT` GPIO 输出（push-pull、no pull、
 low speed）。`MX_GPIO_Init()` 会先写输出锁存低电平再初始化，确保上电/复位期间不产生
